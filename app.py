@@ -8,7 +8,7 @@ DB_FILE = "perfumes_data.csv"
 
 def load_data():
     if os.path.exists(DB_FILE):
-        return pd.read_csv(DB_FILE,encoding='latin-1')
+        return pd.read_csv(DB_FILE, encoding='latin-1')
     return pd.DataFrame(columns=["Categoria", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas"])
 
 df = load_data()
