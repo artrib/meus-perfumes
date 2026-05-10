@@ -80,7 +80,7 @@ if choice == "🔍 Pesquisar":
                 "Ano": st.column_config.TextColumn("Ano", width=50),
                 "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="small"),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
-                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width="200"),
+                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width="180"),
             }
         )
         
