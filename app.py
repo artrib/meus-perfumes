@@ -16,20 +16,21 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 def load_data():
-    df_empty = pd.DataFrame(columns=["Estações", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"])
+    cols = ["Estações", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"]
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
             df.columns = df.columns.str.strip()
             if 'Categoria' in df.columns:
                 df = df.rename(columns={'Categoria': 'Estações'})
-            for col in df_empty.columns:
+            # Garante que todas as colunas existem
+            for col in cols:
                 if col not in df.columns:
                     df[col] = ""
             return df
         except:
-            return df_empty
-    return df_empty
+            return pd.DataFrame(columns=cols)
+    return pd.DataFrame(columns=cols)
 
 df = load_data()
 
@@ -58,22 +59,28 @@ if choice == "🔍 Pesquisar":
             
         st.write(f"Encontrados {len(result)} perfumes.")
         
-        # --- CORREÇÃO DO ERRO: Resetar o index e garantir nomes únicos ---
-        # O data_editor falha se houver índices duplicados
-        result_display = result.reset_index(drop=True)
+        # --- CORREÇÃO PARA O ERRO DE TIPO (API EXCEPTION) ---
+        # 1. Convertemos toda a tabela para String para evitar erros de compatibilidade
+        # 2. Preenchemos valores vazios com texto vazio ""
+        result_display = result.fillna("").astype(str).reset_index(drop=True)
         
-        st.data_editor(
-            result_display, 
-            use_container_width=True, 
-            hide_index=True,
-            disabled=True, 
-            key="editor_pesquisa", # Chave única para evitar conflitos
-            column_config={
-                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large")
-            }
-        )
+        # Usamos o dataframe simples se o data_editor continuar a dar erro no Python 3.14
+        try:
+            st.data_editor(
+                result_display, 
+                use_container_width=True, 
+                hide_index=True,
+                disabled=True, 
+                key="editor_fix",
+                column_config={
+                    "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large")
+                }
+            )
+        except:
+            # Caso o data_editor falhe pela versão do Python, usamos o dataframe normal
+            st.dataframe(result_display, use_container_width=True, hide_index=True)
         
-        st.info("💡 Dica: Agora podes clicar numa célula e fazer Ctrl+C para copiar.")
+        st.info("💡 Dica: Clique duas vezes numa célula para copiar o texto.")
         
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
@@ -104,10 +111,8 @@ elif choice == "➕ Adicionar":
 elif choice == "📝 Editar":
     st.subheader("Editar Perfume")
     if not df.empty:
-        # Garantir nomes únicos no selectbox para evitar erros
         nomes_unicos = sorted(df["Nome do Perfume"].unique().tolist())
         perfume_sel = st.selectbox("Escolha o perfume:", nomes_unicos)
-        
         idx = df[df["Nome do Perfume"] == perfume_sel].index[0]
         
         with st.form("edit_total"):
