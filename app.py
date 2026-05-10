@@ -38,7 +38,7 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 # 3. Na parte da pesquisa, use este bloco:
-st.subheader("O Meu Inventário")
+st.subheader("")
 search = st.text_input("Pesquisar (não precisa de acentos ou maiúsculas):")
 
 if not df.empty:
@@ -84,7 +84,7 @@ elif choice == "📝 Editar":
         with st.form("edit_form"):
             c1, c2 = st.columns(2)
             with c1:
-                new_est = st.text_input("Estação", value=df.at[index, "Estações"])
+                new_est = st.text_input("Estações", value=df.at[index, "Estações"])
                 new_nome = st.text_input("Nome", value=df.at[index, "Nome do Perfume"])
                 new_marca = st.text_input("Marca", value=df.at[index, "Marca"])
             with c2:
