@@ -91,14 +91,13 @@ if choice == "🔍 Pesquisar":
             # LINHA 1: Estações e Notas
             col1, col2 = st.columns(2)
             with col1:
-                # Estações
                 c_est = result["Estações do Ano"].value_counts().reset_index()
                 c_est.columns = ["Estação", "Qtd"]
                 fig1 = px.bar(c_est, x="Estação", y="Qtd", text="Qtd", color="Estação", color_discrete_sequence=px.colors.qualitative.Pastel)
                 fig1.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10, l=0, r=0), height=300)
                 st.plotly_chart(fig1, use_container_width=True)
+
             with col2:
-                # Notas
                 n_s = result["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
                 n_s = n_s[n_s != ""]
                 c_not = n_s.value_counts().nlargest(10).reset_index()
@@ -107,35 +106,33 @@ if choice == "🔍 Pesquisar":
                 fig2.update_layout(showlegend=False, coloraxis_showscale=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
                 st.plotly_chart(fig2, use_container_width=True)
 
-            # LINHA 2: Marcas e Aranha (Famílias)
+            # LINHA 2: Marcas e Aranha Simplificado
             col3, col4 = st.columns(2)
             with col3:
-                # Marcas
                 c_mar = result["Marca"].value_counts().nlargest(10).reset_index()
                 c_mar.columns = ["Marca", "Qtd"]
                 fig3 = px.bar(c_mar, x="Qtd", y="Marca", orientation='h', text="Qtd", color_discrete_sequence=['#636EFA'])
                 fig3.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
                 st.plotly_chart(fig3, use_container_width=True)
+
             with col4:
-                # Aranha (Radar)
+                # GRÁFICO ARANHA SIMPLIFICADO
                 f_s = result["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
                 f_s = f_s[f_s != ""]
                 c_fam = f_s.value_counts().reset_index()
                 c_fam.columns = ["Família", "Qtd"]
                 if not c_fam.empty:
                     fig4 = go.Figure(data=go.Scatterpolar(r=c_fam['Qtd'], theta=c_fam['Família'], fill='toself', line_color='teal'))
-                    fig4.update_layout(polar=dict(radialaxis=dict(visible=True, showticklabels=False)), showlegend=False, margin=dict(t=20, b=20, l=40, r=40), height=300)
+                    fig4.update_layout(
+                        polar=dict(
+                            radialaxis=dict(visible=False), # Esconde números radiais
+                            angularaxis=dict(gridcolor="lightgrey", rotation=90) # Limpa visual
+                        ),
+                        showlegend=False, margin=dict(t=30, b=30, l=50, r=50), height=300
+                    )
                     st.plotly_chart(fig4, use_container_width=True)
 
-            # LINHA 3: Linha do Tempo
-            if not anos_v.empty:
-                c_ano = anos_v.value_counts().sort_index().reset_index()
-                c_ano.columns = ["Ano", "Qtd"]
-                fig5 = px.line(c_ano, x="Ano", y="Qtd", markers=True)
-                fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10, l=0, r=0), height=250)
-                st.plotly_chart(fig5, use_container_width=True)
-
-# --- ABA ADICIONAR ---
+# --- ABAS ADICIONAR / EDITAR / APAGAR ---
 elif choice == "➕ Adicionar":
     st.subheader("Novo Registo")
     with st.form("add_form"):
@@ -143,25 +140,23 @@ elif choice == "➕ Adicionar":
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            est = st.selectbox("Estação de Uso", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV","MEIA-ESTAÇÃO", "Geral"])
-            ocasiao = st.text_input("Ocasiões de Uso")
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV","MEIA-ESTAÇÃO", "Geral"])
+            ocasiao = st.text_input("Ocasiões")
         with c2:
             fam = st.text_input("Família Olfativa")
             perf = st.text_input("Perfumista")
             ano = st.text_input("Ano")
-            notas = st.text_area("Notas Olfativas")
-        if st.form_submit_button("Guardar Perfume"):
+            notas = st.text_area("Notas")
+        if st.form_submit_button("Guardar"):
             if nome:
-                new_data = {"Ano": ano, "Nome do Perfume": nome, "Estações do Ano": est, "Ocasiões de Uso": ocasiao, "Família Olfativa": fam, "Notas Olfativas": notas, "Marca": marca, "Perfumista": perf}
-                df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+                new_row = pd.DataFrame([{"Ano": ano, "Nome do Perfume": nome, "Estações do Ano": est, "Ocasiões de Uso": ocasiao, "Família Olfativa": fam, "Notas Olfativas": notas, "Marca": marca, "Perfumista": perf}])
+                df = pd.concat([df, new_row], ignore_index=True)
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success(f"Perfume '{nome}' adicionado!")
+                st.success("Adicionado!")
                 st.rerun()
-            else: st.error("Nome obrigatório.")
 
-# --- ABA EDITAR ---
 elif choice == "📝 Editar":
-    st.subheader("Editar Perfume")
+    st.subheader("Editar")
     if not df.empty:
         p_sel = st.selectbox("Escolha:", sorted(df["Nome do Perfume"].unique().tolist()))
         idx = df[df["Nome do Perfume"] == p_sel].index[0]
@@ -171,24 +166,21 @@ elif choice == "📝 Editar":
                 e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
                 e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
                 e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações do Ano"]))
-                e_ocasiao = st.text_input("Ocasião", value=str(df.loc[idx, "Ocasiões de Uso"]))
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
-                e_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
                 e_ano = st.text_input("Ano", value=str(df.loc[idx, "Ano"]))
                 e_notas = st.text_area("Notas", value=str(df.loc[idx, "Notas Olfativas"]))
             if st.form_submit_button("Atualizar"):
-                df.loc[idx] = [e_ano, e_nome, e_est, e_ocasiao, e_fam, e_notas, e_marca, e_perf]
+                df.loc[idx, ["Nome do Perfume","Marca","Estações do Ano","Família Olfativa","Ano","Notas Olfativas"]] = [e_nome, e_marca, e_est, e_fam, e_ano, e_notas]
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 st.success("Atualizado!")
                 st.rerun()
 
-# --- ABA APAGAR ---
 elif choice == "🗑️ Apagar":
-    st.subheader("Remover Perfume")
+    st.subheader("Apagar")
     if not df.empty:
         p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("❌ Confirmar Eliminação"):
+        if st.button("Confirmar Eliminação"):
             df = df[df["Nome do Perfume"] != p_del]
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.success("Removido.")
