@@ -8,6 +8,16 @@ import plotly.graph_objects as go
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
+# CSS para aumentar o Menu Lateral (Sidebar)
+st.markdown("""
+    <style>
+    [data-testid="stSidebar"] .stRadio p {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 DB_FILE = "perfumes_data.csv"
 
 # --- FUNÇÕES DE SUPORTE ---
@@ -35,11 +45,11 @@ df = load_data()
 st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
-choice = st.sidebar.radio("Menu de Gestão", menu)
+choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input("", placeholder="Pesquisar na coleção...")
     
     if not df.empty:
         if search:
@@ -92,31 +102,39 @@ if choice == "🔍 Pesquisar":
         # --- LINHA 2: FAMÍLIAS (PIZZA) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
-            # Pizza Aumentada e Legenda com Quadrados Maiores
-            cores_minimalistas = ['#8EACCD', '#D2E0FB', '#F9F3CC', '#D7E5CA', '#E1AEFF', '#B0A695']
+            # Cores Minimalistas com Destaque para Cítrico Aromática
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
             
-            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=cores_minimalistas)
+            # Mapeamento de cores para contraste
+            color_map = {
+                "Cítrico aromática": "#E67E22", # Laranja vibrante para contraste
+                "Cítrico aromático": "#E67E22"
+            }
+            
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', 
+                          color='Família Olfativa',
+                          color_discrete_map=color_map,
+                          color_discrete_sequence=['#8EACCD', '#D7E5CA', '#F9F3CC', '#D2E0FB', '#B0A695'])
+            
             fig3.update_traces(textinfo='percent', hoverinfo='label+percent')
             fig3.update_layout(
                 showlegend=True, 
                 legend=dict(
                     orientation="h", 
                     yanchor="top", 
-                    y=-0.25, 
+                    y=-0.2, 
                     xanchor="center", 
                     x=0.5,
-                    font=dict(size=20), # Texto maior
-                    itemsizing='constant' # Força os quadrados da legenda a serem maiores/visíveis
+                    font=dict(size=22), # Legenda maior
+                    itemsizing='constant' # Quadrados da legenda grandes
                 ),
-                margin=dict(t=40, b=100, l=10, r=10), 
-                height=550 # Altura aumentada para dar escala
+                margin=dict(t=40, b=80, l=10, r=10), 
+                height=480 # Tamanho levemente reduzido para elegância
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
-            # Perfumistas
             c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(10).reset_index()
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", 
                           color_discrete_sequence=['#94A684'])
