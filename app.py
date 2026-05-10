@@ -8,12 +8,26 @@ import plotly.graph_objects as go
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
-# CSS para aumentar o Menu Lateral (Sidebar)
+# CSS para MAXIMIZAR o Menu Lateral (Sidebar)
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] .stRadio p {
-        font-size: 20px;
-        font-weight: bold;
+    /* Aumenta o título do menu lateral */
+    [data-testid="stSidebar"] .stRadio label p {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        color: #4F709C !important;
+    }
+    /* Aumenta as opções (labels) do rádio botão */
+    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
+        padding: 10px 0px !important;
+    }
+    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label p {
+        font-size: 22px !important;
+        font-weight: 500 !important;
+    }
+    /* Aumenta o tamanho do círculo do rádio botão */
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+        margin-bottom: 20px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -102,20 +116,19 @@ if choice == "🔍 Pesquisar":
         # --- LINHA 2: FAMÍLIAS (PIZZA) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
-            # Cores Minimalistas com Destaque para Cítrico Aromática
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
             
-            # Mapeamento de cores para contraste
+            # Mapeamento para garantir contraste no Cítrico Aromática
             color_map = {
-                "Cítrico aromática": "#E67E22", # Laranja vibrante para contraste
-                "Cítrico aromático": "#E67E22"
+                "Cítrico aromática": "#D35400", # Âmbar/Laranja escuro para contraste máximo
+                "Cítrico aromático": "#D35400"
             }
             
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', 
                           color='Família Olfativa',
                           color_discrete_map=color_map,
-                          color_discrete_sequence=['#8EACCD', '#D7E5CA', '#F9F3CC', '#D2E0FB', '#B0A695'])
+                          color_discrete_sequence=['#8EACCD', '#94A684', '#F9F3CC', '#D2E0FB', '#B0A695'])
             
             fig3.update_traces(textinfo='percent', hoverinfo='label+percent')
             fig3.update_layout(
@@ -126,11 +139,11 @@ if choice == "🔍 Pesquisar":
                     y=-0.2, 
                     xanchor="center", 
                     x=0.5,
-                    font=dict(size=22), # Legenda maior
-                    itemsizing='constant' # Quadrados da legenda grandes
+                    font=dict(size=22),
+                    itemsizing='constant'
                 ),
                 margin=dict(t=40, b=80, l=10, r=10), 
-                height=480 # Tamanho levemente reduzido para elegância
+                height=480 
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
