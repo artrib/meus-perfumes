@@ -26,13 +26,13 @@ def load_data():
 
 df = load_data()
 
-st.title("👃 Minha Caixa de Perfumes")
+st.title("👃 Caixa de Perfumes")
 
 menu = ["🔍 Pesquisar", "➕ Adicionar Novo"]
 choice = st.sidebar.radio("Menu", menu)
 
 if choice == "🔍 Pesquisar":
-    st.subheader("Consultar Coleção")
+    st.subheader("Consultar Inventário")
     search = st.text_input("Procure por perfume, nota, perfumista ou marca...", placeholder="Ex: Guerlain, Íris, Morillas...")
     
     if not df.empty:
