@@ -49,7 +49,7 @@ choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar na coleção...")
+    search = st.text_input("", placeholder="Pesquisar...")
     
     if not df.empty:
         if search:
