@@ -85,7 +85,7 @@ elif choice == "➕ Adicionar":
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "GERAL"])
+            est = st.selectbox("Estação de Uso", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "GERAL"])
             ocasiao = st.text_input("Ocasiões de Uso")
         with c2:
             fam = st.text_input("Família Olfativa")
@@ -113,7 +113,7 @@ elif choice == "📝 Editar":
             with c1:
                 e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
                 e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
-                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações"]))
+                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações de Uso"]))
                 e_ocasiao = st.text_input("Ocasião", value=str(df.loc[idx, "Ocasiões de Uso"]))
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
