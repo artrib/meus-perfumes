@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 
-st.set_page_config(page_title="Minha Caixa de Perfumes", layout="wide", page_icon="👃")
+st.set_page_config(page_title="Caixa de Perfumes", layout="wide", page_icon="👃")
 
 DB_FILE = "perfumes_data.csv"
 
@@ -10,7 +10,7 @@ def load_data():
     if os.path.exists(DB_FILE):
         try:
             # quotechar='"' resolve o erro das vírgulas dentro dos nomes dos perfumistas
-            df = pd.read_csv(DB_FILE, encoding='latin-1', sep=',', quotechar='"', on_bad_lines='skip')
+            df = pd.read_csv(DB_FILE, encoding='latin-1', sep=',', on_bad_lines='skip')
             
             # Limpar espaços em branco extras nos nomes das colunas
             df.columns = df.columns.str.strip()
