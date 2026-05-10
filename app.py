@@ -27,11 +27,33 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("Menu de Gestão", menu)
 
 # --- PESQUISAR ---
-if choice == "🔍 Pesquisar":
-    search = st.text_input("Procurar perfume, nota ou marca...")
-    if not df.empty:
-        mask = df.astype(str).apply(lambda x: x.str.contains(search, case=False, na=False)).any(axis=1)
-        st.dataframe(df[mask] if search else df, use_container_width=True, hide_index=True)
+# 1. Importe esta biblioteca no topo do arquivo (se não tiver)
+import unicodedata
+
+# 2. Função para remover acentos e facilitar a busca
+def remover_acentos(texto):
+    if not isinstance(texto, str):
+        return str(texto)
+    return "".join(c for c in unicodedata.normalize('NFD', texto)
+                   if unicodedata.category(c) != 'Mn').lower()
+
+# 3. Na parte da pesquisa, use este bloco:
+st.subheader("O Meu Inventário")
+search = st.text_input("Pesquisar (não precisa de acentos ou maiúsculas):")
+
+if not df.empty:
+    if search:
+        # Normaliza o termo pesquisado pelo usuário
+        search_norm = remover_acentos(search)
+        
+        # Cria uma versão da tabela "sem acentos" apenas para a busca
+        mask = df.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(search_norm)).any(axis=1)
+        result = df[mask]
+    else:
+        result = df
+        
+    st.write(f"Encontrados {len(result)} perfumes.")
+    st.dataframe(result, use_container_width=True, hide_index=True)
 
 # --- ADICIONAR ---
 elif choice == "➕ Adicionar":
