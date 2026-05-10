@@ -52,7 +52,7 @@ else:
     with st.form("add_form", clear_on_submit=True):
         col1, col2 = st.columns(2)
         with col1:
-            cat = st.text_input("Categoria (Ex: Inverno)")
+            cat = st.text_input("Clima (Ex: Inverno)")
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
             ano = st.text_input("Ano")
