@@ -23,7 +23,6 @@ def load_data():
             df.columns = df.columns.str.strip()
             if 'Categoria' in df.columns:
                 df = df.rename(columns={'Categoria': 'Estações'})
-            # Garante que todas as colunas existem
             for col in cols:
                 if col not in df.columns:
                     df[col] = ""
@@ -59,12 +58,8 @@ if choice == "🔍 Pesquisar":
             
         st.write(f"Encontrados {len(result)} perfumes.")
         
-        # --- CORREÇÃO PARA O ERRO DE TIPO (API EXCEPTION) ---
-        # 1. Convertemos toda a tabela para String para evitar erros de compatibilidade
-        # 2. Preenchemos valores vazios com texto vazio ""
         result_display = result.fillna("").astype(str).reset_index(drop=True)
         
-        # Usamos o dataframe simples se o data_editor continuar a dar erro no Python 3.14
         try:
             st.data_editor(
                 result_display, 
@@ -77,10 +72,9 @@ if choice == "🔍 Pesquisar":
                 }
             )
         except:
-            # Caso o data_editor falhe pela versão do Python, usamos o dataframe normal
             st.dataframe(result_display, use_container_width=True, hide_index=True)
         
-        st.info("💡 Dica: Clique duas vezes numa célula para copiar o texto.")
+        # A LINHA st.info FOI REMOVIDA DAQUI
         
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
@@ -142,4 +136,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Removido.")
             st.rerun()
-                
+            
