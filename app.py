@@ -32,13 +32,13 @@ def load_data():
 
 df = load_data()
 
-st.title("👃 Minha Caixa de Perfumes")
+st.title("Caixa de Perfumes")
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("Menu de Gestão", menu)
 
 if choice == "🔍 Pesquisar":
-    st.subheader("O Meu Inventário")
+    st.subheader("")
     search = st.text_input("Pesquisar (não precisa de acentos ou maiúsculas):")
     
     if not df.empty:
