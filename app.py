@@ -92,7 +92,7 @@ elif choice == "➕ Adicionar":
     with st.form("add"):
         c1, c2 = st.columns(2)
         with c1:
-            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "Geral"])
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "MEIA-ESTACAO", "GERAL"])
             nome = st.text_input("Nome *")
             marca = st.text_input("Marca")
         with c2:
