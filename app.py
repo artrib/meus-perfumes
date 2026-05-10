@@ -10,8 +10,7 @@ def load_data():
     if os.path.exists(DB_FILE):
         try:
             # quotechar='"' resolve o erro das vírgulas dentro dos nomes dos perfumistas
-            df = pd.read_csv(DB_FILE, encoding='latin-1', sep=',', on_bad_lines='skip')
-            
+            df = pd.read_csv(DB_FILE, encoding='utf-8')
             # Limpar espaços em branco extras nos nomes das colunas
             df.columns = df.columns.str.strip()
             
