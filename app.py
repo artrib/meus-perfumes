@@ -16,7 +16,7 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 def load_data():
-    cols = ["Nome do Perfume", "Estações", "Ocasiões de Uso", "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista", "Ano"]
+    cols = ["Ano", "Nome do Perfume", "Estações", "Ocasiões de Uso", "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
@@ -72,7 +72,7 @@ elif choice == "➕ Adicionar":
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "MEIA-ESTAÇÃO", "GERAL"])
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "GERAL"])
             ocasiao = st.text_input("Ocasiões de Uso")
         with c2:
             fam = st.text_input("Família Olfativa")
