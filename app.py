@@ -9,19 +9,19 @@ DB_FILE = "perfumes_data.csv"
 def load_data():
     if os.path.exists(DB_FILE):
         try:
-            # quotechar='"' resolve o erro das vírgulas dentro dos nomes dos perfumistas
-            df = pd.read_csv(DB_FILE, encoding='utf-8')
-            # Limpar espaços em branco extras nos nomes das colunas
-            df.columns = df.columns.str.strip()
+            # Carrega o ficheiro (ajuste o encoding se necessário)
+            df = pd.read_csv(DB_FILE, encoding='latin-1', sep=',', on_bad_lines='skip')
             
-            # Garantir que a coluna de Notas existe para a pesquisa funcionar
-            if 'Notas Olfativas' not in df.columns:
-                df['Notas Olfativas'] = ""
+            # COMANDO MÁGICO: Muda o nome da coluna Categoria para Estações
+            df = df.rename(columns={'Categoria': 'Estações'})
+            
+            # Limpa espaços extra nos nomes das colunas
+            df.columns = df.columns.str.strip()
             return df
-        except Exception as e:
-            st.error(f"Erro ao ler arquivo: {e}")
+        except:
             return pd.DataFrame()
     return pd.DataFrame()
+
 
 df = load_data()
 
