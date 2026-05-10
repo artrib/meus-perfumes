@@ -12,8 +12,8 @@ def load_data():
             # Carrega o ficheiro (ajuste o encoding se necessário)
             df = pd.read_csv(DB_FILE, encoding='utf-8')
             
-            # COMANDO MÁGICO: Muda o nome da coluna Categoria para Estações
-            df = df.rename(columns={'Categoria': 'Estações'})
+            # COMANDO MÁGICO: Muda o nome da coluna Categoria para Clima
+            df = df.rename(columns={'Categoria': 'Clima'})
             
             # Limpa espaços extra nos nomes das colunas
             df.columns = df.columns.str.strip()
@@ -25,13 +25,13 @@ def load_data():
 
 df = load_data()
 
-st.title("👃 Caixa de Perfumes")
+st.title("Caixa de Perfumes")
 
 menu = ["🔍 Pesquisar", "➕ Adicionar Novo"]
 choice = st.sidebar.radio("Menu", menu)
 
 if choice == "🔍 Pesquisar":
-    st.subheader("Consultar Inventário")
+    st.subheader("")
     search = st.text_input("Procure por perfume, nota, perfumista ou marca...", placeholder="Ex: Guerlain, Íris, Morillas...")
     
     if not df.empty:
