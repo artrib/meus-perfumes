@@ -21,8 +21,21 @@ def load_data():
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
             df.columns = df.columns.str.strip()
+ if 'Estações' in df.columns:
+                df = df.rename(columns={'Estações': 'Estações de Uso'})
             if 'Categoria' in df.columns:
-                df = df.rename(columns={'Categoria': 'Estações'})
+                df = df.rename(columns={'Categoria': 'Estações de Uso'})
+            
+            # Garante que todas as colunas existem
+            for col in cols:
+                if col not in df.columns:
+                    df[col] = ""
+            
+            df = df.fillna("").astype(str)
+            return df[cols]
+        except:
+            return pd.DataFrame(columns=cols)
+    return pd.DataFrame(columns=cols)
             
             # Garante que as colunas existem
             for col in cols:
