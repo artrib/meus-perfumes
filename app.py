@@ -16,11 +16,24 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 def load_data():
-    cols = ["Ano", "Nome do Perfume", "Estações", "Ocasiões de Uso", "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
+    # Definição da ordem e nomes das colunas
+    cols = [
+        "Ano", 
+        "Nome do Perfume", 
+        "Estações de Uso", 
+        "Ocasiões de Uso", 
+        "Família Olfativa", 
+        "Notas Olfativas",
+        "Marca", 
+        "Perfumista",
+    ]
+    
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
             df.columns = df.columns.str.strip()
+            
+            # Renomear colunas antigas para o novo padrão
             if 'Estações' in df.columns:
                 df = df.rename(columns={'Estações': 'Estações de Uso'})
             if 'Categoria' in df.columns:
@@ -31,18 +44,7 @@ def load_data():
                 if col not in df.columns:
                     df[col] = ""
             
-            df = df.fillna("").astype(str)
-            return df[cols]
-        except:
-            return pd.DataFrame(columns=cols)
-    return pd.DataFrame(columns=cols)
-            
-            # Garante que as colunas existem
-            for col in cols:
-                if col not in df.columns:
-                    df[col] = ""
-            
-            # FORÇAR TODAS AS COLUNAS A SEREM TEXTO (Resolve o TypeError)
+            # Converte tudo para texto para evitar erros de edição
             df = df.fillna("").astype(str)
             return df[cols]
         except:
@@ -52,55 +54,86 @@ def load_data():
 df = load_data()
 
 # --- INTERFACE ---
-st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: left; font-size: 32px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("Menu de Gestão", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("Pesquisar notas, marcas ou ocasiões")
+    search = st.text_input("Pesquisar")
+    
     if not df.empty:
         if search:
             termos = search.split()
             result = df.copy()
             for termo in termos:
                 termo_norm = remover_acentos(termo)
-                mask = result.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(termo_norm)).any(axis=1)
+                mask = result.astype(str).apply(
+                    lambda col: col.map(remover_acentos).str.contains(termo_norm)
+                ).any(axis=1)
                 result = result[mask]
         else:
             result = df
+            
         st.write(f"Encontrados {len(result)} perfumes.")
+        
         result_display = result.reset_index(drop=True)
-        st.data_editor(result_display, use_container_width=True, hide_index=True, disabled=True)
+        
+        try:
+            st.data_editor(
+                result_display, 
+                use_container_width=True, 
+                hide_index=True,
+                disabled=True, 
+                key="editor_final",
+                column_config={
+                    "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large"),
+                    "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium")
+                }
+            )
+        except:
+            st.dataframe(result_display, use_container_width=True, hide_index=True)
+        
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
-            st.download_button("📥 Descarregar resultados", csv, "pesquisa.csv", "text/csv")
+            st.download_button("📥 Descarregar resultados (CSV)", csv, "meus_perfumes.csv", "text/csv")
 
 # --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
     st.subheader("Novo Registo")
-    with st.form("add"):
+    with st.form("add_form"):
         c1, c2 = st.columns(2)
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            est = st.selectbox("Estação de Uso", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "GERAL"])
+            est = st.selectbox("Estação de Uso", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV","MEIA-ESTAÇÃO", "Geral"])
             ocasiao = st.text_input("Ocasiões de Uso")
         with c2:
             fam = st.text_input("Família Olfativa")
             perf = st.text_input("Perfumista")
             ano = st.text_input("Ano")
             notas = st.text_area("Notas Olfativas")
+            
         if st.form_submit_button("Guardar"):
             if nome:
-                new_row = pd.DataFrame([[nome, marca, est, ocasiao, fam, notas, perf, ano]], columns=df.columns)
+                new_data = {
+                    "Nome do Perfume": nome,
+                    "Marca": marca,
+                    "Estações de Uso": est,
+                    "Ocasiões de Uso": ocasiao,
+                    "Família Olfativa": fam,
+                    "Notas Olfativas": notas,
+                    "Perfumista": perf,
+                    "Ano": ano
+                }
+                new_row = pd.DataFrame([new_data])
                 df = pd.concat([df, new_row], ignore_index=True)
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 st.success("Adicionado!")
                 st.rerun()
 
-# --- ABA EDITAR (CORRIGIDA) ---
+# --- ABA EDITAR ---
 elif choice == "📝 Editar":
     st.subheader("Editar Perfume")
     if not df.empty:
@@ -113,7 +146,7 @@ elif choice == "📝 Editar":
             with c1:
                 e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
                 e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
-                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações de Uso"]))
+                e_est = st.text_input("Estação de Uso", value=str(df.loc[idx, "Estações de Uso"]))
                 e_ocasiao = st.text_input("Ocasião", value=str(df.loc[idx, "Ocasiões de Uso"]))
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
@@ -122,17 +155,26 @@ elif choice == "📝 Editar":
                 e_notas = st.text_area("Notas", value=str(df.loc[idx, "Notas Olfativas"]))
             
             if st.form_submit_button("Atualizar"):
-                # USAR .LOC PARA TODOS OS CAMPOS (Resolve o erro da linha 166)
                 df.loc[idx, "Nome do Perfume"] = e_nome
-                df.loc[idx, "Estações"] = e_est
-                df.loc[idx, "Ocasiões de Uso"] = e_ocasiao
                 df.loc[idx, "Marca"] = e_marca
+                df.loc[idx, "Estações de Uso"] = e_est
+                df.loc[idx, "Ocasiões de Uso"] = e_ocasiao
                 df.loc[idx, "Família Olfativa"] = e_fam
                 df.loc[idx, "Notas Olfativas"] = e_notas
                 df.loc[idx, "Perfumista"] = e_perf
-                df.loc[idx, "Ano"] = e_ano 
+                df.loc[idx, "Ano"] = e_ano
                 
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("✅ Atualizado com sucesso!")
+                st.success("✅ Atualizado!")
                 st.rerun()
-                
+
+# --- ABA APAGAR ---
+elif choice == "🗑️ Apagar":
+    st.subheader("Remover Perfume")
+    if not df.empty:
+        p_del = st.selectbox("Escolha para apagar:", df["Nome do Perfume"].unique().tolist())
+        if st.button("❌ Confirmar"):
+            df = df[df["Nome do Perfume"] != p_del]
+            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+            st.warning("Removido.")
+            st.rerun()
