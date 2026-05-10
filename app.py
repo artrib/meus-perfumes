@@ -72,7 +72,7 @@ elif choice == "➕ Adicionar":
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "MEIA-ESTAÇÃO", "Geral"])
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "MEIA-ESTAÇÃO", "GERAL"])
             ocasiao = st.text_input("Ocasiões de Uso")
         with c2:
             fam = st.text_input("Família Olfativa")
@@ -111,13 +111,13 @@ elif choice == "📝 Editar":
             if st.form_submit_button("Atualizar"):
                 # USAR .LOC PARA TODOS OS CAMPOS (Resolve o erro da linha 166)
                 df.loc[idx, "Nome do Perfume"] = e_nome
-                df.loc[idx, "Marca"] = e_marca
                 df.loc[idx, "Estações"] = e_est
                 df.loc[idx, "Ocasiões de Uso"] = e_ocasiao
+                df.loc[idx, "Marca"] = e_marca
                 df.loc[idx, "Família Olfativa"] = e_fam
-                df.loc[idx, "Perfumista"] = e_perf
-                df.loc[idx, "Ano"] = e_ano
                 df.loc[idx, "Notas Olfativas"] = e_notas
+                df.loc[idx, "Perfumista"] = e_perf
+                df.loc[idx, "Ano"] = e_ano 
                 
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 st.success("✅ Atualizado com sucesso!")
