@@ -92,7 +92,7 @@ elif choice == "➕ Adicionar":
     with st.form("add"):
         c1, c2 = st.columns(2)
         with c1:
-            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "MEIA-ESTAÇÃO, "GERAL"])
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "OUTONO", "INVERNO", "Geral"])
             nome = st.text_input("Nome *")
             marca = st.text_input("Marca")
         with c2:
@@ -142,4 +142,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Removido.")
             st.rerun()
-            
+                
