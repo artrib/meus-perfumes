@@ -71,31 +71,35 @@ elif choice == "➕ Adicionar":
                 st.success("Adicionado!")
                 st.rerun()
 
-elif choice == "📝 Editar":
-    st.subheader("Editar Perfume")
-    if not df.empty:
-        perfume_sel = st.selectbox("Escolha o perfume para editar:", df["Nome do Perfume"].tolist())
-        index = df[df["Nome do Perfume"] == perfume_sel].index[0]
-        with st.form("edit_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                new_est = st.text_input("Estação", value=df.at[index, "Estações"])
-                new_nome = st.text_input("Nome", value=df.at[index, "Nome do Perfume"])
-                new_marca = st.text_input("Marca", value=df.at[index, "Marca"])
-            with c2:
-                new_perf = st.text_input("Perfumista", value=df.at[index, "Perfumista"])
-                new_fam = st.text_input("Família", value=df.at[index, "Família Olfativa"])
-                new_notas = st.text_area("Notas", value=df.at[index, "Notas Olfativas"])
-            if st.form_submit_button("Atualizar"):
-                df.at[index, "Estações"] = new_est
-                df.at[index, "Nome do Perfume"] = new_nome
-                df.at[index, "Marca"] = new_marca
-                df.at[index, "Perfumista"] = new_perf
-                df.at[index, "Família Olfativa"] = new_fam
-                df.at[index, "Notas Olfativas"] = new_notas
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Atualizado!")
-                st.rerun()
+elif choice == "⚙️ Gerir":
+    tab1, tab2 = st.tabs(["📝 Editar", "🗑️ Apagar"])
+    
+    with tab1:
+        if not df.empty:
+            perfume_sel = st.selectbox("Escolha o perfume para editar:", df["Nome do Perfume"].tolist())
+            
+            # Localizar a linha correta com segurança
+            if perfume_sel:
+                idx = df[df["Nome do Perfume"] == perfume_sel].index[0]
+                
+                with st.form("edit_form"):
+                    # Carregar os valores atuais com segurança (.get serve para não dar erro se a coluna faltar)
+                    e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações"]))
+                    e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
+                    e_notas = st.text_area("Notas", value=str(df.loc[idx, "Notas Olfativas"]) if "Notas Olfativas" in df.columns else "")
+                    
+                    if st.form_submit_button("Atualizar"):
+                        # ATUALIZAÇÃO SEGURA: Usamos .loc em vez de .at
+                        df.loc[idx, "Estações"] = e_est
+                        df.loc[idx, "Nome do Perfume"] = e_nome
+                        if "Notas Olfativas" in df.columns:
+                            df.loc[idx, "Notas Olfativas"] = e_notas
+                        
+                        # Salvar
+                        df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                        st.success("Atualizado com sucesso!")
+                        st.rerun()
+
 
 elif choice == "🗑️ Apagar":
     st.subheader("Remover Perfume")
