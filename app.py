@@ -7,17 +7,19 @@ st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="�
 DB_FILE = "perfumes_data.csv"
 
 def load_data():
+def load_data():
     if os.path.exists(DB_FILE):
         try:
-            # utf-8-sig resolve problemas de acentos (como o "ã" de Verão)
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
+            # Limpa espaços e renomeia com segurança
             df.columns = df.columns.str.strip()
-            # Muda o nome da coluna para Estações
-            df = df.rename(columns={'Categoria': 'Estações'})
+            if 'Categoria' in df.columns:
+                df = df.rename(columns={'Categoria': 'Estações'})
             return df
         except:
-            return pd.read_csv(DB_FILE, encoding='latin-1').rename(columns={'Categoria': 'Estações'})
-    return pd.DataFrame(columns=["Estações", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"])
+            # Caso o ficheiro esteja vazio ou corrompido
+            return pd.DataFrame(columns=["Estações", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"])
+    return pd.DataFrame()
 
 df = load_data()
 
