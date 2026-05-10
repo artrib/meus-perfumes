@@ -77,7 +77,7 @@ if choice == "🔍 Pesquisar":
             disabled=True, 
             key="editor_final",
             column_config={
-                "Ano": st.column_config.TextColumn("Ano", width=60),
+                "Ano": st.column_config.TextColumn("Ano", width=40),
                 "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="small"),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width="medium"),
