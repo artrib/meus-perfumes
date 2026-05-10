@@ -66,11 +66,13 @@ if choice == "🔍 Pesquisar":
             st.download_button(label="📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv")
 
         st.markdown("---")
+        # Trava os gráficos para não mexerem com o dedo
         config_estatico = {'staticPlot': True}
 
         # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
+            # Estações (Números em pé)
             c_est = df["Estações do Ano"].value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", 
                           color_discrete_sequence=['#D8C4B6'])
@@ -79,6 +81,7 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_estatico)
 
         with col2:
+            # Notas Olfativas (Números em pé)
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(10).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", 
@@ -90,6 +93,7 @@ if choice == "🔍 Pesquisar":
         # --- LINHA 2: FAMÍLIAS (PIZZA) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
+            # Pizza Minimalista com Legenda Grande e Afastada
             cores_minimalistas = ['#8EACCD', '#D2E0FB', '#F9F3CC', '#D7E5CA', '#E1AEFF', '#B0A695']
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
@@ -100,18 +104,19 @@ if choice == "🔍 Pesquisar":
                 showlegend=True, 
                 legend=dict(
                     orientation="h", 
-                    yanchor="bottom", 
-                    y=-0.3, 
+                    yanchor="top", 
+                    y=-0.35, # Espaço extra para não ficar em cima do gráfico
                     xanchor="center", 
                     x=0.5,
-                    font=dict(size=14) # Legenda maior
+                    font=dict(size=16) # Letra maior
                 ),
-                margin=dict(t=10, b=80, l=10, r=10), 
-                height=380
+                margin=dict(t=10, b=100, l=10, r=10), 
+                height=420 
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
+            # Perfumistas (Números em pé)
             c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(10).reset_index()
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", 
                           color_discrete_sequence=['#94A684'])
@@ -119,15 +124,15 @@ if choice == "🔍 Pesquisar":
             fig4.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
 
-        # --- LINHA 3: MARCAS (ÚLTIMO COM ESPAÇO EXTRA) ---
-        st.markdown("<br><br><br>", unsafe_allow_html=True) # Desce o gráfico um pouco mais
+        # --- LINHA 3: MARCAS (DESCEU MAIS UM POUCO) ---
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
         c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig5.update_traces(textangle=0, textposition='outside')
         fig5.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=20, l=0, r=0), height=350)
         st.plotly_chart(fig5, use_container_width=True, config=config_estatico)
 
-# --- ABAS DE GESTÃO ---
+# --- ABAS DE GESTÃO (ADICIONAR / EDITAR / APAGAR) ---
 elif choice == "➕ Adicionar":
     st.subheader("Novo Registo")
     with st.form("add_form"):
