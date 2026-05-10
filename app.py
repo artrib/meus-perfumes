@@ -20,7 +20,7 @@ def load_data():
     cols = [
         "Ano", 
         "Nome do Perfume", 
-        "Estações de Uso", 
+        "Estações do Ano", 
         "Ocasiões de Uso", 
         "Família Olfativa", 
         "Notas Olfativas",
@@ -35,9 +35,9 @@ def load_data():
             
             # Renomear colunas antigas para o novo padrão
             if 'Estações' in df.columns:
-                df = df.rename(columns={'Estações': 'Estações de Uso'})
+                df = df.rename(columns={'Estações': 'Estações do Ano'})
             if 'Categoria' in df.columns:
-                df = df.rename(columns={'Categoria': 'Estações de Uso'})
+                df = df.rename(columns={'Categoria': 'Estações do Ano'})
             
             # Garante que todas as colunas existem
             for col in cols:
@@ -61,7 +61,7 @@ choice = st.sidebar.radio("Menu de Gestão", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("Pesquisar")
+    search = st.text_input("")
     
     if not df.empty:
         if search:
@@ -108,7 +108,7 @@ elif choice == "➕ Adicionar":
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
             est = st.selectbox("Estação de Uso", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV","MEIA-ESTAÇÃO", "Geral"])
-            ocasiao = st.text_input("Ocasiões de Uso")
+            ocasiao = st.text_input("Ocasiões do Ano")
         with c2:
             fam = st.text_input("Família Olfativa")
             perf = st.text_input("Perfumista")
@@ -120,7 +120,7 @@ elif choice == "➕ Adicionar":
                 new_data = {
                     "Nome do Perfume": nome,
                     "Marca": marca,
-                    "Estações de Uso": est,
+                    "Estações do Ano": est,
                     "Ocasiões de Uso": ocasiao,
                     "Família Olfativa": fam,
                     "Notas Olfativas": notas,
@@ -146,7 +146,7 @@ elif choice == "📝 Editar":
             with c1:
                 e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
                 e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
-                e_est = st.text_input("Estação de Uso", value=str(df.loc[idx, "Estações de Uso"]))
+                e_est = st.text_input("Estação do Ano", value=str(df.loc[idx, "Estações do Ano"]))
                 e_ocasiao = st.text_input("Ocasião", value=str(df.loc[idx, "Ocasiões de Uso"]))
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
@@ -157,7 +157,7 @@ elif choice == "📝 Editar":
             if st.form_submit_button("Atualizar"):
                 df.loc[idx, "Nome do Perfume"] = e_nome
                 df.loc[idx, "Marca"] = e_marca
-                df.loc[idx, "Estações de Uso"] = e_est
+                df.loc[idx, "Estações do Ano"] = e_est
                 df.loc[idx, "Ocasiões de Uso"] = e_ocasiao
                 df.loc[idx, "Família Olfativa"] = e_fam
                 df.loc[idx, "Notas Olfativas"] = e_notas
