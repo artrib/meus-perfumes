@@ -71,36 +71,38 @@ if choice == "🔍 Pesquisar":
         # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
-            # Gráfico de Estações com números em pé
+            # Estações (Números em pé)
             c_est = df["Estações do Ano"].value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color="Estações do Ano", color_discrete_sequence=px.colors.qualitative.Pastel)
-            fig1.update_traces(textangle=0, textposition='outside') # textangle=0 coloca os números "em pé"
+            fig1.update_traces(textangle=0, textposition='outside') 
             fig1.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig1, use_container_width=True, config=config_estatico)
 
         with col2:
-            # Notas Olfativas
+            # Notas Olfativas (Números em pé ao final das barras)
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(10).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color="count", color_continuous_scale="Viridis")
+            fig2.update_traces(textangle=0, textposition='outside') # Números em pé
             fig2.update_layout(showlegend=False, coloraxis_showscale=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig2, use_container_width=True, config=config_estatico)
 
-        # --- LINHA 2: FAMÍLIAS (DONUT) E PERFUMISTAS ---
+        # --- LINHA 2: FAMÍLIAS (DONUT TOP 6) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
-            # Estilo Donut para Famílias Olfativas (Simplificado)
+            # Donut para Famílias Olfativas (Apenas as 6 principais)
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
-            c_fam = f_s[f_s != ""].value_counts().reset_index()
+            c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index() # Filtro TOP 6
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', hole=0.5, color_discrete_sequence=px.colors.qualitative.Safe)
             fig3.update_traces(textinfo='percent+label')
             fig3.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=300)
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
-            # Novo Gráfico: Perfumistas (Top 10)
+            # Perfumistas (Números em pé)
             c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(10).reset_index()
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#AB63FA'])
+            fig4.update_traces(textangle=0, textposition='outside')
             fig4.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
 
@@ -108,7 +110,7 @@ if choice == "🔍 Pesquisar":
         st.markdown("<br>", unsafe_allow_html=True)
         c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#636EFA'])
-        fig5.update_traces(textangle=0, textposition='outside')
+        fig5.update_traces(textangle=0, textposition='outside') # Números em pé
         fig5.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=10, l=0, r=0), height=300)
         st.plotly_chart(fig5, use_container_width=True, config=config_estatico)
 
