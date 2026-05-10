@@ -88,7 +88,7 @@ if choice == "🔍 Pesquisar":
                 disabled=True, 
                 key="editor_final",
                 column_config={
-                    "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large"),
+                    "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="medium"),
                     "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium")
                 }
             )
