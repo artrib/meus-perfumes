@@ -21,7 +21,7 @@ def load_data():
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
             df.columns = df.columns.str.strip()
- if 'Estações' in df.columns:
+            if 'Estações' in df.columns:
                 df = df.rename(columns={'Estações': 'Estações de Uso'})
             if 'Categoria' in df.columns:
                 df = df.rename(columns={'Categoria': 'Estações de Uso'})
