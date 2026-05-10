@@ -21,7 +21,7 @@ def load_data():
 
 df = load_data()
 
-st.title("👃 Minha Caixa de Perfumes")
+st.title("Caixa de Perfumes")
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("Menu de Gestão", menu)
