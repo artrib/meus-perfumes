@@ -41,7 +41,7 @@ choice = st.sidebar.radio("Menu de Gestão", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("Pesquisar (ex: 'baunilha ambar')")
+    search = st.text_input("Pesquisar notas ou marcas (ex: 'baunilha ambar')")
     
     if not df.empty:
         if search:
@@ -58,28 +58,23 @@ if choice == "🔍 Pesquisar":
             
         st.write(f"Encontrados {len(result)} perfumes.")
         
-        # --- NOVIDADE: TABELA INTERATIVA ---
-        # O parâmetro 'selection_mode' e a configuração padrão do st.dataframe 
-        # já permitem clicar duas vezes numa célula para copiar o conteúdo.
-        st.dataframe(
+        # --- SOLUÇÃO PARA COPIAR: st.data_editor ---
+        # O data_editor permite selecionar o texto como se fosse uma folha de cálculo
+        st.data_editor(
             result, 
             use_container_width=True, 
             hide_index=True,
+            disabled=True, # Desativa a edição direta para não estragar os dados por acidente
             column_config={
                 "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large")
             }
         )
         
-        # --- BOTÃO PARA COPIAR/EXPORTAR ---
+        st.info("💡 Dica: Agora podes clicar numa célula e arrastar para selecionar o texto, ou clicar e fazer Ctrl+C.")
+        
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(
-                label="📥 Descarregar estes resultados (CSV)",
-                data=csv,
-                file_name='pesquisa_perfumes.csv',
-                mime='text/csv',
-            )
-            st.caption("Dica: Podes clicar duas vezes numa célula da tabela acima para selecionar e copiar o texto.")
+            st.download_button("📥 Descarregar resultados", csv, "pesquisa.csv", "text/csv")
 
 # --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
@@ -106,39 +101,34 @@ elif choice == "➕ Adicionar":
 elif choice == "📝 Editar":
     st.subheader("Editar Perfume")
     if not df.empty:
-        perfume_sel = st.selectbox("Escolha o perfume para editar:", df["Nome do Perfume"].unique())
+        perfume_sel = st.selectbox("Escolha o perfume:", df["Nome do Perfume"].unique())
         idx = df[df["Nome do Perfume"] == perfume_sel].index[0]
         
-        with st.form("edit_form_total"):
+        with st.form("edit_total"):
             c1, c2 = st.columns(2)
             with c1:
-                new_est = st.text_input("Estação", value=str(df.loc[idx, "Estações"]))
-                new_nome = st.text_input("Nome do Perfume", value=str(df.loc[idx, "Nome do Perfume"]))
-                new_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
+                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações"]))
+                e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
+                e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
             with c2:
-                new_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
-                new_fam = st.text_input("Família Olfativa", value=str(df.loc[idx, "Família Olfativa"]))
-                new_notas = st.text_area("Notas Olfativas", value=str(df.loc[idx, "Notas Olfativas"]))
+                e_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
+                e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
+                e_notas = st.text_area("Notas", value=str(df.loc[idx, "Notas Olfativas"]))
             
             if st.form_submit_button("Atualizar"):
-                df.loc[idx, "Estações"] = new_est
-                df.loc[idx, "Nome do Perfume"] = new_nome
-                df.loc[idx, "Marca"] = new_marca
-                df.loc[idx, "Perfumista"] = new_perf
-                df.loc[idx, "Família Olfativa"] = new_fam
-                df.loc[idx, "Notas Olfativas"] = new_notas
+                df.loc[idx, ["Estações", "Nome do Perfume", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"]] = [e_est, e_nome, e_marca, e_perf, e_fam, e_notas]
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("✅ Atualizado!")
+                st.success("Atualizado!")
                 st.rerun()
 
 # --- ABA APAGAR ---
 elif choice == "🗑️ Apagar":
     st.subheader("Remover Perfume")
     if not df.empty:
-        perfume_del = st.selectbox("Escolha para APAGAR:", df["Nome do Perfume"].tolist())
-        if st.button("❌ Confirmar Eliminação"):
-            df = df[df["Nome do Perfume"] != perfume_del]
+        p_del = st.selectbox("Escolha para apagar:", df["Nome do Perfume"].tolist())
+        if st.button("❌ Confirmar"):
+            df = df[df["Nome do Perfume"] != p_del]
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Removido.")
             st.rerun()
-            
+                             
