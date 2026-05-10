@@ -58,19 +58,22 @@ if choice == "🔍 Pesquisar":
             
         st.write(f"Encontrados {len(result)} perfumes.")
         
-        # --- SOLUÇÃO PARA COPIAR: st.data_editor ---
-        # O data_editor permite selecionar o texto como se fosse uma folha de cálculo
+        # --- CORREÇÃO DO ERRO: Resetar o index e garantir nomes únicos ---
+        # O data_editor falha se houver índices duplicados
+        result_display = result.reset_index(drop=True)
+        
         st.data_editor(
-            result, 
+            result_display, 
             use_container_width=True, 
             hide_index=True,
-            disabled=True, # Desativa a edição direta para não estragar os dados por acidente
+            disabled=True, 
+            key="editor_pesquisa", # Chave única para evitar conflitos
             column_config={
                 "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width="large")
             }
         )
         
-        st.info("💡 Dica: Agora podes clicar numa célula e arrastar para selecionar o texto, ou clicar e fazer Ctrl+C.")
+        st.info("💡 Dica: Agora podes clicar numa célula e fazer Ctrl+C para copiar.")
         
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
@@ -101,7 +104,10 @@ elif choice == "➕ Adicionar":
 elif choice == "📝 Editar":
     st.subheader("Editar Perfume")
     if not df.empty:
-        perfume_sel = st.selectbox("Escolha o perfume:", df["Nome do Perfume"].unique())
+        # Garantir nomes únicos no selectbox para evitar erros
+        nomes_unicos = sorted(df["Nome do Perfume"].unique().tolist())
+        perfume_sel = st.selectbox("Escolha o perfume:", nomes_unicos)
+        
         idx = df[df["Nome do Perfume"] == perfume_sel].index[0]
         
         with st.form("edit_total"):
@@ -125,10 +131,10 @@ elif choice == "📝 Editar":
 elif choice == "🗑️ Apagar":
     st.subheader("Remover Perfume")
     if not df.empty:
-        p_del = st.selectbox("Escolha para apagar:", df["Nome do Perfume"].tolist())
+        p_del = st.selectbox("Escolha para apagar:", df["Nome do Perfume"].unique().tolist())
         if st.button("❌ Confirmar"):
             df = df[df["Nome do Perfume"] != p_del]
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Removido.")
             st.rerun()
-                             
+            
