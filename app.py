@@ -10,7 +10,7 @@ def load_data():
     if os.path.exists(DB_FILE):
         try:
             # Carrega o ficheiro (ajuste o encoding se necessário)
-            df = pd.read_csv(DB_FILE, encoding='latin-1', sep=',', on_bad_lines='skip')
+            df = pd.read_csv(DB_FILE, encoding='utf-8')
             
             # COMANDO MÁGICO: Muda o nome da coluna Categoria para Estações
             df = df.rename(columns={'Categoria': 'Estações'})
