@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import unicodedata
-import plotly.express as px # <--- NECESSÁRIO PARA O GRÁFICO
+import plotly.express as px
 
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
@@ -89,35 +89,49 @@ if choice == "🔍 Pesquisar":
             csv = result.to_csv(index=False).encode('utf-8-sig')
             st.download_button("📥 Descarregar resultados (CSV)", csv, "meus_perfumes.csv", "text/csv")
 
-            # --- NOVO: GRÁFICO DE BARRAS NO FINAL DA PÁGINA ---
+            # --- ZONA DE GRÁFICOS (SEM TÍTULOS E SEM ÍCONES) ---
             st.markdown("---")
-            st.subheader("📊 Quantidade por Estação do Ano")
             
-            # Contagem dos dados para o gráfico
-            contagem = result["Estações do Ano"].value_counts().reset_index()
-            contagem.columns = ["Estação", "Quantidade"]
+            # Preparação de Dados: Estações
+            contagem_est = result["Estações do Ano"].value_counts().reset_index()
+            contagem_est.columns = ["Estação", "Quantidade"]
             
-            if not contagem.empty:
-                # Criar gráfico de barras
-                fig = px.bar(
-                    contagem, 
-                    x="Estação", 
-                    y="Quantidade",
-                    text="Quantidade",
-                    color="Estação",
-                    color_discrete_sequence=px.colors.qualitative.Set3
+            # Preparação de Dados: Notas Olfativas (Top 10)
+            notas_series = result["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
+            notas_series = notas_series[notas_series != ""] 
+            contagem_notas = notas_series.value_counts().nlargest(10).reset_index()
+            contagem_notas.columns = ["Nota", "Frequência"]
+
+            col_g1, col_g2 = st.columns(2)
+
+            with col_g1:
+                # Gráfico de Barras Vertical (Estações)
+                fig_est = px.bar(
+                    contagem_est, x="Estação", y="Quantidade",
+                    text="Quantidade", color="Estação",
+                    color_discrete_sequence=px.colors.qualitative.Pastel
                 )
-                
-                fig.update_traces(textposition='outside')
-                fig.update_layout(
-                    showlegend=False,
-                    xaxis_title=None,
-                    yaxis_title="Nº de Perfumes",
-                    margin=dict(t=20, b=20, l=0, r=0),
-                    height=400
+                fig_est.update_traces(textposition='outside')
+                fig_est.update_layout(
+                    showlegend=False, xaxis_title=None, yaxis_title=None,
+                    margin=dict(t=10, b=10, l=0, r=0), height=350
                 )
-                
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig_est, use_container_width=True)
+
+            with col_g2:
+                # Gráfico de Barras Horizontal (Top Notas)
+                fig_notas = px.bar(
+                    contagem_notas, x="Frequência", y="Nota",
+                    orientation='h', text="Frequência", color="Frequência",
+                    color_continuous_scale="Viridis"
+                )
+                fig_notas.update_layout(
+                    showlegend=False, coloraxis_showscale=False,
+                    xaxis_title=None, yaxis_title=None,
+                    yaxis={'categoryorder':'total ascending'},
+                    margin=dict(t=10, b=10, l=0, r=0), height=350
+                )
+                st.plotly_chart(fig_notas, use_container_width=True)
 
 # --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
@@ -138,14 +152,9 @@ elif choice == "➕ Adicionar":
         if st.form_submit_button("Guardar Perfume"):
             if nome:
                 new_data = {
-                    "Ano": ano,
-                    "Nome do Perfume": nome,
-                    "Estações do Ano": est,
-                    "Ocasiões de Uso": ocasiao,
-                    "Família Olfativa": fam,
-                    "Notas Olfativas": notas,
-                    "Marca": marca,
-                    "Perfumista": perf
+                    "Ano": ano, "Nome do Perfume": nome, "Estações do Ano": est,
+                    "Ocasiões de Uso": ocasiao, "Família Olfativa": fam,
+                    "Notas Olfativas": notas, "Marca": marca, "Perfumista": perf
                 }
                 new_row = pd.DataFrame([new_data])
                 df = pd.concat([df, new_row], ignore_index=True)
