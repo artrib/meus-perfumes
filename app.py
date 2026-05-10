@@ -71,7 +71,6 @@ if choice == "🔍 Pesquisar":
         # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
-            # Estações
             c_est = df["Estações do Ano"].value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", 
                           color_discrete_sequence=['#D8C4B6'])
@@ -80,7 +79,6 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_estatico)
 
         with col2:
-            # Notas Olfativas
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(10).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", 
@@ -89,12 +87,12 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=40, b=0, l=0, r=0), height=350)
             st.plotly_chart(fig2, use_container_width=True, config=config_estatico)
 
-        st.markdown("<br>", unsafe_allow_html=True) # Espaçamento igual entre linhas
+        st.markdown("<br>", unsafe_allow_html=True)
 
         # --- LINHA 2: FAMÍLIAS (PIZZA) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
-            # Pizza Aumentada
+            # Pizza Aumentada e Legenda com Quadrados Maiores
             cores_minimalistas = ['#8EACCD', '#D2E0FB', '#F9F3CC', '#D7E5CA', '#E1AEFF', '#B0A695']
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
@@ -106,13 +104,14 @@ if choice == "🔍 Pesquisar":
                 legend=dict(
                     orientation="h", 
                     yanchor="top", 
-                    y=-0.4, # Afastada minimamente para baixo
+                    y=-0.25, 
                     xanchor="center", 
                     x=0.5,
-                    font=dict(size=18) # Legenda maior
+                    font=dict(size=20), # Texto maior
+                    itemsizing='constant' # Força os quadrados da legenda a serem maiores/visíveis
                 ),
-                margin=dict(t=40, b=120, l=10, r=10), 
-                height=450 # Gráfico minimamente maior
+                margin=dict(t=40, b=100, l=10, r=10), 
+                height=550 # Altura aumentada para dar escala
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
@@ -125,7 +124,7 @@ if choice == "🔍 Pesquisar":
             fig4.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=40, b=0, l=0, r=0), height=350)
             st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
 
-        st.markdown("<br>", unsafe_allow_html=True) # Espaçamento igual entre linhas
+        st.markdown("<br>", unsafe_allow_html=True)
 
         # --- LINHA 3: MARCAS ---
         c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
