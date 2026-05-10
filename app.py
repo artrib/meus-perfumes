@@ -16,7 +16,7 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 def load_data():
-    cols = ["Nome do Perfume", "Marca", "Estações", "Ocasiões de Uso", "Família Olfativa", "Notas Olfativas", "Perfumista", "Ano"]
+    cols = ["Nome do Perfume", "Estações", "Ocasiões de Uso", "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista", "Ano"]
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
