@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import unicodedata
+import plotly.express as px # <--- ACRESCENTADO
 
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
@@ -87,6 +88,32 @@ if choice == "🔍 Pesquisar":
         if not result.empty:
             csv = result.to_csv(index=False).encode('utf-8-sig')
             st.download_button("📥 Descarregar resultados (CSV)", csv, "meus_perfumes.csv", "text/csv")
+
+            # --- ACRESCENTADO: GRÁFICO NO FINAL DA PÁGINA ---
+            st.markdown("---")
+            st.subheader("📊 Distribuição por Estações do Ano")
+            
+            # Contagem dos dados filtrados
+            contagem = result["Estações do Ano"].value_counts().reset_index()
+            contagem.columns = ["Estação", "Quantidade"]
+            
+            if not contagem.empty:
+                fig = px.pie(
+                    contagem, 
+                    values="Quantidade", 
+                    names="Estação", 
+                    hole=0.5, # Efeito Donut
+                    color_discrete_sequence=px.colors.qualitative.Pastel
+                )
+                
+                fig.update_traces(textinfo='percent+label')
+                fig.update_layout(
+                    showlegend=True, 
+                    margin=dict(t=20, b=20, l=0, r=0),
+                    height=450
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
 
 # --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
