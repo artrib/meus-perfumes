@@ -32,7 +32,7 @@ def load_data():
 
 df = load_data()
 
-st.markdown("<h2 style='text-align: center; font-size: 30px;'>Caixa de Perfumes</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: left; font-size: 32px;'>Caixa de Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("Menu de Gestão", menu)
