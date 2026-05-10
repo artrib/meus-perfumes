@@ -14,15 +14,22 @@ def remover_acentos(texto):
                    if unicodedata.category(c) != 'Mn').lower()
 
 def load_data():
-    if os.path.exists(DB_FILE):
-        try:
-            # Tenta ler com utf-8-sig para acentos
-            df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
-            df.columns = df.columns.str.strip()
-            if 'Categoria' in df.columns:
-                df = df.rename(columns={'Categoria': 'Estações'})
-            return df
-        except:
+    df_empty = pd.DataFrame(columns=["Estações", "Nome do Perfume", "Ano", "Marca", "Perfumista", "Família Olfativa", "Notas Olfativas"])
+    if not os.path.exists(DB_FILE):
+        return df_empty
+    try:
+        df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
+        # SOLUÇÃO PARA O ERRO: Converte tudo para texto (string)
+        df = df.astype(str) 
+        # Substitui o texto 'nan' (vazio do Excel) por nada
+        df = df.replace('nan', '')
+        
+        df.columns = df.columns.str.strip()
+        if 'Categoria' in df.columns:
+            df = df.rename(columns={'Categoria': 'Estações'})
+        return df
+    except:
+        return df_empty
             try:
                 df = pd.read_csv(DB_FILE, encoding='latin-1').rename(columns={'Categoria': 'Estações'})
                 return df
