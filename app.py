@@ -42,7 +42,6 @@ if choice == "🔍 Pesquisar":
     search = st.text_input("", placeholder="Pesquisar na coleção...")
     
     if not df.empty:
-        # Lógica de Pesquisa
         if search:
             termos = search.split()
             result = df.copy()
@@ -55,66 +54,65 @@ if choice == "🔍 Pesquisar":
             
         st.write(f"Encontrados **{len(result)}** perfumes.")
         
-        # TABELA DE DADOS
         st.data_editor(
             result.reset_index(drop=True), 
             use_container_width=True, hide_index=True, disabled=True,
             column_config={"Ano": st.column_config.TextColumn("Ano", width=50)}
         )
         
-        # --- BOTÃO DE DESCARREGAR (REPOSTO AQUI) ---
         if not result.empty:
             st.markdown("<br>", unsafe_allow_html=True)
             csv = result.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(
-                label="📥 Descarregar resultados (CSV)", 
-                data=csv, 
-                file_name="meus_perfumes.csv", 
-                mime="text/csv",
-                key="download_btn"
-            )
+            st.download_button(label="📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv")
 
-        # --- ZONA DE GRÁFICOS (FIXOS VISUALMENTE E ESTÁTICOS) ---
         st.markdown("---")
-        
-        # Configuração para os gráficos não reagirem ao toque/dedo
         config_estatico = {'staticPlot': True}
 
-        # Linha 1: Estações e Notas (Sempre baseados na coleção total 'df')
+        # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
+            # Gráfico de Estações com números em pé
             c_est = df["Estações do Ano"].value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color="Estações do Ano", color_discrete_sequence=px.colors.qualitative.Pastel)
-            fig1.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10, l=0, r=0), height=300)
+            fig1.update_traces(textangle=0, textposition='outside') # textangle=0 coloca os números "em pé"
+            fig1.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig1, use_container_width=True, config=config_estatico)
 
         with col2:
+            # Notas Olfativas
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(10).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color="count", color_continuous_scale="Viridis")
             fig2.update_layout(showlegend=False, coloraxis_showscale=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
             st.plotly_chart(fig2, use_container_width=True, config=config_estatico)
 
-        # Linha 2: Marcas e Família (Aranha Simplificado)
+        # --- LINHA 2: FAMÍLIAS (DONUT) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
-            c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
-            fig3 = px.bar(c_mar, x="count", y="Marca", orientation='h', text="count", color_discrete_sequence=['#636EFA'])
-            fig3.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
+            # Estilo Donut para Famílias Olfativas (Simplificado)
+            f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
+            c_fam = f_s[f_s != ""].value_counts().reset_index()
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', hole=0.5, color_discrete_sequence=px.colors.qualitative.Safe)
+            fig3.update_traces(textinfo='percent+label')
+            fig3.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=300)
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
-            f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
-            c_fam = f_s[f_s != ""].value_counts().reset_index()
-            if not c_fam.empty:
-                fig4 = go.Figure(data=go.Scatterpolar(r=c_fam['count'], theta=c_fam['Família Olfativa'], fill='toself', line_color='teal'))
-                fig4.update_layout(
-                    polar=dict(radialaxis=dict(visible=False), angularaxis=dict(gridcolor="lightgrey", rotation=90)),
-                    showlegend=False, margin=dict(t=30, b=30, l=50, r=50), height=300
-                )
-                st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
+            # Novo Gráfico: Perfumistas (Top 10)
+            c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(10).reset_index()
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#AB63FA'])
+            fig4.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10, l=0, r=0), height=300)
+            st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
 
-# --- ABAS DE GESTÃO (ADICIONAR / EDITAR / APAGAR) ---
+        # --- LINHA 3: MARCAS (ÚLTIMO) ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
+        fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#636EFA'])
+        fig5.update_traces(textangle=0, textposition='outside')
+        fig5.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=10, l=0, r=0), height=300)
+        st.plotly_chart(fig5, use_container_width=True, config=config_estatico)
+
+# --- ABAS DE GESTÃO ---
 elif choice == "➕ Adicionar":
     st.subheader("Novo Registo")
     with st.form("add_form"):
@@ -150,10 +148,11 @@ elif choice == "📝 Editar":
                 e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações do Ano"]))
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
+                e_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
                 e_ano = st.text_input("Ano", value=str(df.loc[idx, "Ano"]))
                 e_notas = st.text_area("Notas", value=str(df.loc[idx, "Notas Olfativas"]))
             if st.form_submit_button("Atualizar"):
-                df.loc[idx, ["Nome do Perfume","Marca","Estações do Ano","Família Olfativa","Ano","Notas Olfativas"]] = [e_nome, e_marca, e_est, e_fam, e_ano, e_notas]
+                df.loc[idx] = [e_ano, e_nome, e_est, df.loc[idx, "Ocasiões de Uso"], e_fam, e_notas, e_marca, e_perf]
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 st.success("Atualizado!")
                 st.rerun()
