@@ -7,7 +7,7 @@ import plotly.express as px
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
-# 2. CSS para Menu Lateral Grande e Botão Centralizado
+# 2. CSS para Interface
 st.markdown("""
     <style>
     [data-testid="stSidebar"] .stRadio label p {
@@ -30,7 +30,6 @@ DB_FILE = "perfumes_data.csv"
 ESTACOES_LISTA = ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "Geral"]
 OCASIOES_OPCOES = ["CASUAL DIA", "CASUAL NOITE", "TRABALHO", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL"]
 
-# --- FUNÇÕES DE SUPORTE ---
 def remover_acentos(texto):
     if not isinstance(texto, str): return str(texto)
     return "".join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn').lower()
@@ -48,7 +47,6 @@ def load_data():
 
 df = load_data()
 
-# --- INTERFACE ---
 st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
@@ -65,8 +63,8 @@ if choice == "🔍 Pesquisar":
             mask = result.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(termo_norm)).any(axis=1)
             result = result[mask]
     
-    # NÚMERO DE PERFUMES LOGO ABAIXO DA BARRA
-    st.markdown(f"**Total na coleção: {len(result)} perfume(s)**")
+    # TEXTO ALTERADO PARA "TOTAL"
+    st.markdown(f"**Total: {len(result)}**")
     
     if not df.empty:
         st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
@@ -81,7 +79,7 @@ if choice == "🔍 Pesquisar":
         st.markdown("---")
         config_est = {'staticPlot': True}
 
-        # --- LINHA 1: ESTAÇÕES E NOTAS (TOP 30) ---
+        # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
             c_est = df["Estações do Ano"].value_counts().reset_index()
@@ -95,21 +93,39 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=700, margin=dict(t=10, b=10))
             st.plotly_chart(fig2, use_container_width=True, config=config_est)
 
-        # --- LINHA 2: PIZZA (TOP 6) E PERFUMISTAS (TOP 15) ---
+        st.markdown("<br><br>", unsafe_allow_html=True) # SEPARAÇÃO PEQUENA ENTRE LINHAS
+
+        # --- LINHA 2: PIZZA (CORES E LEGENDA AJUSTADAS) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
-            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=['#8EACCD', '#94A684', '#F9F3CC', '#D2E0FB', '#D35400', '#B0A695'])
-            fig3.update_layout(showlegend=True, legend=dict(orientation="h", y=-0.2, font=dict(size=18)), margin=dict(t=10, b=10))
+            
+            # Ajuste de Cores Específicas
+            cores_map = {
+                "Cítrico aromático": "#FFD700",    # Amarelo contrastante
+                "Amadeirado especiado": "#8B4513"  # Castanho
+            }
+            
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', 
+                          color='Família Olfativa', color_discrete_map=cores_map,
+                          color_discrete_sequence=px.colors.qualitative.Pastel)
+            
+            # Legenda Centralizada abaixo
+            fig3.update_layout(showlegend=True, 
+                               legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5, font=dict(size=16)),
+                               margin=dict(t=10, b=80))
             st.plotly_chart(fig3, use_container_width=True, config=config_est)
+
         with col4:
             c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(15).reset_index()
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig4.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=500, margin=dict(t=10, b=10))
             st.plotly_chart(fig4, use_container_width=True, config=config_est)
 
-        # --- LINHA 3: MARCAS (TOP 15) ---
+        st.markdown("<br><br>", unsafe_allow_html=True) # SEPARAÇÃO PEQUENA PARA O ÚLTIMO GRÁFICO
+
+        # --- LINHA 3: MARCAS ---
         c_mar = df["Marca"].value_counts().nlargest(15).reset_index()
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
