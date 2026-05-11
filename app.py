@@ -80,7 +80,7 @@ if choice == "🔍 Pesquisar":
     st.write(f"Total: {len(result)} Perfumes")
     
     # COLE ESTE BLOCO NOVO:
-        st.data_editor(
+    st.data_editor(
             result.reset_index(drop=True), 
             use_container_width=True, 
             hide_index=True, 
