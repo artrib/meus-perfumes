@@ -23,6 +23,10 @@ st.markdown("""
         display: flex;
         justify-content: center;
     }
+    /* Ajuste de padding entre colunas do Streamlit */
+    [data-testid="column"] {
+        padding: 15px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -63,15 +67,15 @@ if choice == "🔍 Pesquisar":
             mask = result.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(termo_norm)).any(axis=1)
             result = result[mask]
     
-    # TEXTO ALTERADO PARA "TOTAL"
-    st.markdown(f"**Total: {len(result)}**")
+    # LINHA DO TOTAL AJUSTADA
+    st.markdown(f"**Total: {len(result)} Perfumes**")
     
     if not df.empty:
         st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
         
         if not result.empty:
             st.markdown("<br>", unsafe_allow_html=True)
-            col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+            col_btn2 = st.columns([1, 1, 1])[1]
             with col_btn2:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
@@ -84,26 +88,23 @@ if choice == "🔍 Pesquisar":
         with col1:
             c_est = df["Estações do Ano"].value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#D8C4B6'])
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False, margin=dict(t=10, b=10))
+            fig1.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False, margin=dict(t=20, b=20, l=20, r=20))
             st.plotly_chart(fig1, use_container_width=True, config=config_est)
         with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(30).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#4F709C'])
-            fig2.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=700, margin=dict(t=10, b=10))
+            fig2.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=700, margin=dict(t=20, b=20, l=20, r=20))
             st.plotly_chart(fig2, use_container_width=True, config=config_est)
 
-        st.markdown("<br><br>", unsafe_allow_html=True) # SEPARAÇÃO PEQUENA ENTRE LINHAS
-
-        # --- LINHA 2: PIZZA (CORES E LEGENDA AJUSTADAS) E PERFUMISTAS ---
+        # --- LINHA 2: PIZZA (MENOR) E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
             
-            # Ajuste de Cores Específicas
             cores_map = {
-                "Cítrico aromático": "#FFD700",    # Amarelo contrastante
+                "Cítrico aromático": "#FFF176",    # Amarelo mais claro
                 "Amadeirado especiado": "#8B4513"  # Castanho
             }
             
@@ -111,24 +112,25 @@ if choice == "🔍 Pesquisar":
                           color='Família Olfativa', color_discrete_map=cores_map,
                           color_discrete_sequence=px.colors.qualitative.Pastel)
             
-            # Legenda Centralizada abaixo
-            fig3.update_layout(showlegend=True, 
-                               legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5, font=dict(size=16)),
-                               margin=dict(t=10, b=80))
+            # Gráfico menor e Legenda em 2 colunas abaixo
+            fig3.update_layout(
+                showlegend=True, 
+                legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5, font=dict(size=14), ncol=2),
+                margin=dict(t=20, b=100, l=50, r=50),
+                height=450 # Tamanho um pouco menor
+            )
             st.plotly_chart(fig3, use_container_width=True, config=config_est)
 
         with col4:
             c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(15).reset_index()
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
-            fig4.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=500, margin=dict(t=10, b=10))
+            fig4.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=500, margin=dict(t=20, b=20, l=20, r=20))
             st.plotly_chart(fig4, use_container_width=True, config=config_est)
-
-        st.markdown("<br><br>", unsafe_allow_html=True) # SEPARAÇÃO PEQUENA PARA O ÚLTIMO GRÁFICO
 
         # --- LINHA 3: MARCAS ---
         c_mar = df["Marca"].value_counts().nlargest(15).reset_index()
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
-        fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
+        fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=20, l=20, r=20))
         st.plotly_chart(fig5, use_container_width=True, config=config_est)
 
 elif choice == "➕ Adicionar":
@@ -159,14 +161,13 @@ elif choice == "📝 Editar":
         p_sel = st.selectbox("Selecione:", sorted(df["Nome do Perfume"].unique().tolist()))
         idx = df[df["Nome do Perfume"] == p_sel].index[0]
         ocas_at = [x.strip() for x in str(df.loc[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
-        est_at = df.loc[idx, "Estações do Ano"]
         
         with st.form("edit_form"):
             c1, c2 = st.columns(2)
             with c1:
                 e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
                 e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
-                e_est = st.selectbox("Estação", ESTACOES_LISTA, index=ESTACOES_LISTA.index(est_at) if est_at in ESTACOES_LISTA else 0)
+                e_est = st.selectbox("Estação", ESTACOES_LISTA, index=ESTACOES_LISTA.index(df.loc[idx, "Estações do Ano"]) if df.loc[idx, "Estações do Ano"] in ESTACOES_LISTA else 0)
                 e_ocas = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=ocas_at)
             with c2:
                 e_fam = st.text_input("Família", value=str(df.loc[idx, "Família Olfativa"]))
