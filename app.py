@@ -176,7 +176,7 @@ elif choice == "📝 Editar":
 at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
 
 # O novo campo com a mesma dinâmica das Ocasiões
-e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
+                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
                 e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
             with c2:
                 e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
