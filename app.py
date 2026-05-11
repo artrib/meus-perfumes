@@ -66,11 +66,10 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input("", placeholder="Pesquisar... (Ex: 'Dio Fah')")
     
     result = df.copy()
     if search:
-        # Sistema de pesquisa relacional (AND)
         termos = search.split()
         for termo in termos:
             t_norm = remover_acentos(termo)
@@ -80,7 +79,30 @@ if choice == "🔍 Pesquisar":
     st.write(f"Total: {len(result)} Perfumes")
     
     if not df.empty:
-        st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
+        # --- AQUI É ONDE SE DEFINE A LARGURA ---
+        st.data_editor(
+            result.reset_index(drop=True), 
+            use_container_width=True, 
+            hide_index=True, 
+            disabled=True,
+            column_config={
+                "Ano": st.column_config.TextColumn("Ano", width="small"),
+                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="large"),
+                "Marca": st.column_config.TextColumn("Marca", width="medium"),
+                "Família Olfativa": st.column_config.TextColumn("Família Olfativa", width="medium"),
+                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=400), # Largura fixa maior
+                "Estações do Ano": st.column_config.TextColumn("Estações", width="medium"),
+                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões", width="medium"),
+                "Perfumista": st.column_config.TextColumn("Perfumista", width="medium"),
+            }
+        )
+        # ---------------------------------------
+
+        if not result.empty:
+            _, col_center, _ = st.columns([1, 2, 1])
+            with col_center:
+                csv = result.to_csv(index=False).encode('utf-8-sig')
+                st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
         
         if not result.empty:
             # Botão centralizado usando colunas para garantir o alinhamento
