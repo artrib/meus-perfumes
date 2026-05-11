@@ -67,10 +67,11 @@ choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
     search = st.text_input("", placeholder="Pesquisar...")
+if choice == "🔍 Pesquisar":
+    search = st.text_input("", placeholder="Pesquisar...")
     
     result = df.copy()
     if search:
-        # Sistema de pesquisa relacional (AND)
         termos = search.split()
         for termo in termos:
             t_norm = remover_acentos(termo)
@@ -79,8 +80,9 @@ if choice == "🔍 Pesquisar":
     
     st.write(f"Total: {len(result)} Perfumes")
     
-    # COLE ESTE BLOCO NOVO:
-    st.data_editor(
+    if not df.empty:
+        # Configuração de larguras (column_config)
+        st.data_editor(
             result.reset_index(drop=True), 
             use_container_width=True, 
             hide_index=True, 
@@ -95,29 +97,14 @@ if choice == "🔍 Pesquisar":
             }
         )
         
-    if not result.empty:
-            # Botão centralizado usando colunas para garantir o alinhamento
+        if not result.empty:
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 
-st.markdown("---")
-  config_fixo = {'staticPlot': True}
-
-        # PALETA ANTERIOR RESTAURADA
-        paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
-        
-        # Mapeamento manual com a troca solicitada
-        cores_pizza = {
-            "Cítrico aromático": "#94A684", 
-            "Aromático fougère": "#8EACCD"
-        }
-
-        col1, col2 = st.columns(2)
-        with col1:
-            c_est = df["Estações do Ano"].value_counts().reset_index()
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
+        st.markdown("---")
+        config_fixo = {'staticPlot': True}
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
         
