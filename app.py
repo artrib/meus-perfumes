@@ -63,7 +63,7 @@ if choice == "🔍 Pesquisar":
             mask = result.apply(lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(), axis=1)
             result = result[mask]
     
-    st.write(f" {len(result)} Perfumes")
+    st.write(f" {len(result)} perfumes")
     if not df.empty:
         # Tabela com larguras configuradas
         st.data_editor(
