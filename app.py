@@ -111,7 +111,7 @@ if choice == "🔍 Pesquisar":
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=15, b=100), height=350)
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=45, b=100), height=350)
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
         with col4:
             c_perf = df["Perfumista"].replace(["", "nan"], "Desconhecido").value_counts().nlargest(15).reset_index()
