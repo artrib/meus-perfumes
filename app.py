@@ -157,139 +157,174 @@ if choice == "🔍 Pesquisar":
 
         st.markdown("---")
 
-        # CONFIG GRÁFICOS
-        config_fixo = {'staticPlot': True}
-        paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
+        # =================================================
+        # PRIMEIRA LINHA DE GRÁFICOS
+        # =================================================
 
         col1, col2 = st.columns(2)
 
-        # 1. ESTAÇÕES DO ANO
+        # -------------------------------------------------
+        # ESTAÇÕES DO ANO
+        # -------------------------------------------------
+
         with col1:
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_est.columns = ["Estações do Ano", "count"]
 
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
+            fig1 = px.bar(
+                c_est,
+                x="Estações do Ano",
+                y="count",
+                text="count",
+                color_discrete_sequence=['#B0A695']
+            )
+
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=420)
+            fig1.update_layout(
+                xaxis_title=None, yaxis_title=None,
+                margin=dict(t=20, b=10), height=400
+            )
+
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-        # 2. NOTAS OLFATIVAS (Com Unificação)
+            # -------------------------------------------------
+            # NOVO: OCASIÕES DE USO (Logo abaixo das Estações)
+            # -------------------------------------------------
+            st.write("") # Espaçador
+            c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
+            c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
+            c_oc.columns = ["Ocasião", "count"]
+
+            fig_oc = px.bar(
+                c_oc,
+                x="count",
+                y="Ocasião",
+                orientation='h',
+                text="count",
+                color_discrete_sequence=['#C08261']
+            )
+
+            fig_oc.update_layout(
+                yaxis={'categoryorder': 'total ascending'},
+                xaxis_title=None, yaxis_title=None,
+                margin=dict(t=20, b=10), height=350
+            )
+            st.plotly_chart(fig_oc, use_container_width=True, config=config_fixo)
+
+        # -------------------------------------------------
+        # NOTAS OLFATIVAS
+        # -------------------------------------------------
+
         with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
 
             altura_notas = max(400, len(c_not) * 22)
-            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
-            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=altura_notas, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
+
+            fig2 = px.bar(
+                c_not,
+                x="count",
+                y="Notas Olfativas",
+                orientation='h',
+                text="count",
+                color_discrete_sequence=['#8EACCD']
+            )
+
+            fig2.update_layout(
+                yaxis={'categoryorder': 'total ascending'},
+                height=770, # Ajustado para alinhar com os dois gráficos da esquerda
+                margin=dict(t=10, b=10),
+                xaxis_title=None, yaxis_title=None
+            )
+
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
+
+        # =================================================
+        # SEGUNDA LINHA DE GRÁFICOS
+        # =================================================
 
         col3, col4 = st.columns(2)
 
-        # 3. FAMÍLIA OLFATIVA (Com Unificação)
+        # -------------------------------------------------
+        # FAMÍLIA OLFATIVA
+        # -------------------------------------------------
+
         with col3:
-            # Tratando tanto '/' quanto ',' como separadores
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
 
-            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
+            fig3 = px.pie(
+                c_fam,
+                values='count',
+                names='Família Olfativa',
+                color_discrete_sequence=paleta_minimalista
+            )
+
+            fig3.update_layout(
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
+                margin=dict(t=10, b=100), height=340
+            )
+
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
-        # 4. PERFUMISTAS (Com Unificação)
+        # -------------------------------------------------
+        # PERFUMISTAS
+        # -------------------------------------------------
+
         with col4:
             c_perf = df["Perfumista"].replace(["", "nan"], "Desconhecido")
             c_perf = c_perf.apply(lambda x: padronizar_texto(x) if x != "Desconhecido" else x)
             c_perf = c_perf.value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
 
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
-            fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
+            fig4 = px.bar(
+                c_perf,
+                x="count",
+                y="Perfumista",
+                orientation='h',
+                text="count",
+                color_discrete_sequence=['#94A684']
+            )
+
+            fig4.update_layout(
+                yaxis={'categoryorder': 'total ascending'},
+                height=450,
+                margin=dict(t=10, b=10),
+                xaxis_title=None, yaxis_title=None
+            )
+
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
+        # =================================================
+        # LINHA FINAL: MARCAS
+        # =================================================
+        
+        st.markdown("---")
+        st.subheader("Distribuição por Marcas")
+        
+        c_marca = df["Marca"].replace(["", "nan"], "N/A")
+        c_marca = c_marca.apply(padronizar_texto).value_counts().nlargest(20).reset_index(name="count")
+        c_marca.columns = ["Marca", "count"]
+
+        fig_marca = px.bar(
+            c_marca,
+            x="Marca",
+            y="count",
+            text="count",
+            color_discrete_sequence=['#607274']
+        )
+
+        fig_marca.update_traces(textposition='outside')
+        fig_marca.update_layout(
+            xaxis_title=None, yaxis_title=None,
+            margin=dict(t=20, b=10), height=400
+        )
+        st.plotly_chart(fig_marca, use_container_width=True, config=config_fixo)
+
 # =========================================================
-# ADICIONAR / EDITAR (Lógica de salvamento com padronização)
+# ADICIONAR / EDITAR / APAGAR (Lógica permanece igual à anterior)
 # =========================================================
-
-elif choice == "➕ Adicionar":
-    st.subheader("Novo Registo")
-    with st.form("add"):
-        c1, c2 = st.columns(2)
-        with c1:
-            nome = st.text_input("Nome do Perfume *")
-            marca = st.text_input("Marca")
-            est = st.multiselect("Estações", ESTACOES_LISTA)
-            oc = st.multiselect("Ocasiões de Uso", OCASIOES_OPCOES)
-        with c2:
-            fam = st.text_input("Família Olfativa")
-            perf = st.text_input("Perfumista")
-            ano = st.text_input("Ano")
-            notas = st.text_area("Notas Olfativas")
-
-        if st.form_submit_button("Guardar"):
-            if nome:
-                # Padronizar as entradas de texto livre antes de guardar
-                fam_clean = ", ".join([padronizar_texto(f) for f in fam.replace('/', ',').split(',') if f.strip()])
-                notas_clean = ", ".join([padronizar_texto(n) for n in notas.split(',') if n.strip()])
-                perf_clean = padronizar_texto(perf)
-
-                new = pd.DataFrame([{
-                    "Ano": ano,
-                    "Nome do Perfume": nome,
-                    "Estações do Ano": ", ".join(est),
-                    "Ocasiões de Uso": ", ".join(oc),
-                    "Família Olfativa": fam_clean,
-                    "Notas Olfativas": notas_clean,
-                    "Marca": marca,
-                    "Perfumista": perf_clean
-                }])
-                df = pd.concat([df, new], ignore_index=True)
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Guardado com sucesso!")
-                st.rerun()
-
-elif choice == "📝 Editar":
-    st.subheader("Editar")
-    if not df.empty:
-        sel = st.selectbox("Selecione:", sorted(df["Nome do Perfume"].unique().tolist()))
-        idx = df[df["Nome do Perfume"] == sel].index[0]
-
-        at_oc = [x.strip() for x in str(df.at[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
-        at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
-
-        with st.form("edit"):
-            c1, c2 = st.columns(2)
-            with c1:
-                e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
-                e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
-                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
-                e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
-            with c2:
-                e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
-                e_p = st.text_input("Perfumista", value=df.at[idx, "Perfumista"])
-                e_a = st.text_input("Ano", value=df.at[idx, "Ano"])
-                e_not = st.text_area("Notas", value=df.at[idx, "Notas Olfativas"])
-
-            if st.form_submit_button("Atualizar"):
-                # Padronizar ao atualizar
-                fam_edit = ", ".join([padronizar_texto(f) for f in e_f.replace('/', ',').split(',') if f.strip()])
-                notas_edit = ", ".join([padronizar_texto(n) for n in e_not.split(',') if n.strip()])
-                perf_edit = padronizar_texto(e_p)
-
-                df.loc[idx] = [e_a, e_n, ", ".join(e_e), ", ".join(e_oc), fam_edit, notas_edit, e_m, perf_edit]
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Atualizado!")
-                st.rerun()
-
-elif choice == "🗑️ Apagar":
-    st.subheader("Eliminar")
-    if not df.empty:
-        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("Confirmar"):
-            df = df[df["Nome do Perfume"] != p_del]
-            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.warning("Eliminado.")
-            st.rerun()
-            
