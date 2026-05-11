@@ -70,7 +70,20 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input("", placeholder="Ex: 'Cha Blue' para encontrar Chanel Bleu")
+    
+    result = df.copy()
+    if search:
+        # Divide a pesquisa em palavras individuais
+        termos = search.split()
+        for termo in termos:
+            t_norm = remover_acentos(termo)
+            # Filtra o que já foi filtrado, refinando a busca (Relacional/AND)
+            mask = result.apply(lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(), axis=1)
+            result = result[mask]
+    
+    st.write(f"Total: {len(result)} Perfumes")
+    # --- FIM DO TRECHO ---
     
     result = df.copy()
     if search:
