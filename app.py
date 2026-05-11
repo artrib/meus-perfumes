@@ -799,5 +799,60 @@ elif choice == "📝 Editar":
                     ]
                 )
 
-            if st.
-            
+            if st.form_submit_button("Atualizar"):
+
+                df.loc[idx] = [
+                    e_a,
+                    e_n,
+                    ", ".join(e_e),
+                    ", ".join(e_oc),
+                    e_f,
+                    e_not,
+                    e_m,
+                    e_p
+                ]
+
+                df.to_csv(
+                    DB_FILE,
+                    index=False,
+                    encoding='utf-8-sig'
+                )
+
+                st.success("Atualizado!")
+
+                st.rerun()
+
+# =========================================================
+# APAGAR
+# =========================================================
+
+elif choice == "🗑️ Apagar":
+
+    st.subheader("Eliminar")
+
+    if not df.empty:
+
+        p_del = st.selectbox(
+            "Perfume:",
+            sorted(
+                df["Nome do Perfume"]
+                .unique()
+                .tolist()
+            )
+        )
+
+        if st.button("Confirmar"):
+
+            df = df[
+                df["Nome do Perfume"] != p_del
+            ]
+
+            df.to_csv(
+                DB_FILE,
+                index=False,
+                encoding='utf-8-sig'
+            )
+
+            st.warning("Eliminado.")
+
+            st.rerun()
