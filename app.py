@@ -86,6 +86,19 @@ def remover_acentos(texto):
         if unicodedata.category(c) != 'Mn'
     ).lower()
 
+def padronizar_texto(texto):
+    """Transforma termos como 'Cítricos' e 'cítrico' em 'Citrico'."""
+    if not isinstance(texto, str) or texto == "":
+        return ""
+    
+    # Remove acentos e converte para minúsculas
+    texto = remover_acentos(texto).strip()
+    
+    # Normalização simples de plural (remove 's' final se a palavra for longa)
+    if texto.endswith('s') and len(texto) > 3:
+        texto = texto[:-1]
+        
+    return texto.upper() # Mantemos em maiúsculas para os gráficos de categorias fixas
 
 def load_data():
 
@@ -307,6 +320,7 @@ if choice == "🔍 Pesquisar":
                 .str.split(',')
                 .explode()
                 .str.strip()
+                .map(padronizar_texto)
             )
 
             c_est = (
@@ -326,7 +340,6 @@ if choice == "🔍 Pesquisar":
                 color_discrete_sequence=['#B0A695']
             )
 
-            # LARGURA DAS COLUNAS
             fig1.update_traces(
                 width=0.45,
                 textposition='outside'
@@ -335,10 +348,7 @@ if choice == "🔍 Pesquisar":
             fig1.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
-                margin=dict(
-                    t=20,
-                    b=10
-                ),
+                margin=dict(t=20, b=10),
                 height=420
             )
 
@@ -360,7 +370,7 @@ if choice == "🔍 Pesquisar":
                 .str.split(',')
                 .explode()
                 .str.strip()
-                .str.capitalize()
+                .map(padronizar_texto)
             )
 
             c_not = (
@@ -392,10 +402,7 @@ if choice == "🔍 Pesquisar":
                     'categoryorder': 'total ascending'
                 },
                 height=altura_notas,
-                margin=dict(
-                    t=10,
-                    b=10
-                ),
+                margin=dict(t=10, b=10),
                 xaxis_title=None,
                 yaxis_title=None
             )
@@ -413,10 +420,60 @@ if choice == "🔍 Pesquisar":
         col3, col4 = st.columns(2)
 
         # -------------------------------------------------
-        # FAMÍLIA OLFATIVA
+        # OCASIÕES DE USO (ABAIXO DAS ESTAÇÕES)
         # -------------------------------------------------
 
         with col3:
+
+            o_s = (
+                df["Ocasiões de Uso"]
+                .astype(str)
+                .str.split(',')
+                .explode()
+                .str.strip()
+                .map(padronizar_texto)
+            )
+
+            c_oc = (
+                o_s[o_s != ""]
+                .value_counts()
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Ocasiões"
+                })
+            )
+
+            fig_oc = px.bar(
+                c_oc,
+                x="Ocasiões",
+                y="count",
+                text="count",
+                color_discrete_sequence=['#C08261']
+            )
+
+            fig_oc.update_traces(
+                width=0.45,
+                textposition='outside'
+            )
+
+            fig_oc.update_layout(
+                xaxis_title=None,
+                yaxis_title=None,
+                margin=dict(t=20, b=10),
+                height=420
+            )
+
+            st.plotly_chart(
+                fig_oc,
+                use_container_width=True,
+                config=config_fixo
+            )
+
+        # -------------------------------------------------
+        # FAMÍLIA OLFATIVA
+        # -------------------------------------------------
+
+        with col4:
 
             f_s = (
                 df["Família Olfativa"]
@@ -424,7 +481,7 @@ if choice == "🔍 Pesquisar":
                 .str.split('/')
                 .explode()
                 .str.strip()
-                .str.capitalize()
+                .map(padronizar_texto)
             )
 
             c_fam = (
@@ -446,7 +503,6 @@ if choice == "🔍 Pesquisar":
 
             fig3.update_layout(
                 showlegend=True,
-
                 legend=dict(
                     orientation="h",
                     yanchor="top",
@@ -454,12 +510,7 @@ if choice == "🔍 Pesquisar":
                     xanchor="center",
                     x=0.5
                 ),
-
-                margin=dict(
-                    t=10,
-                    b=100
-                ),
-
+                margin=dict(t=10, b=100),
                 height=340
             )
 
@@ -469,15 +520,22 @@ if choice == "🔍 Pesquisar":
                 config=config_fixo
             )
 
+        # =================================================
+        # TERCEIRA LINHA DE GRÁFICOS
+        # =================================================
+
+        col5, col6 = st.columns(2)
+
         # -------------------------------------------------
         # PERFUMISTAS
         # -------------------------------------------------
 
-        with col4:
+        with col5:
 
             c_perf = (
                 df["Perfumista"]
                 .replace(["", "nan"], "Desconhecido")
+                .map(padronizar_texto)
                 .value_counts()
                 .nlargest(15)
                 .reset_index(name="count")
@@ -499,20 +557,57 @@ if choice == "🔍 Pesquisar":
                 yaxis={
                     'categoryorder': 'total ascending'
                 },
-
                 height=450,
-
-                margin=dict(
-                    t=10,
-                    b=10
-                ),
-
+                margin=dict(t=10, b=10),
                 xaxis_title=None,
                 yaxis_title=None
             )
 
             st.plotly_chart(
                 fig4,
+                use_container_width=True,
+                config=config_fixo
+            )
+
+        # -------------------------------------------------
+        # MARCAS (FINAL DE TUDO)
+        # -------------------------------------------------
+
+        with col6:
+
+            c_marca = (
+                df["Marca"]
+                .replace(["", "nan"], "Desconhecido")
+                .map(padronizar_texto)
+                .value_counts()
+                .nlargest(15)
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Marca"
+                })
+            )
+
+            fig_marca = px.bar(
+                c_marca,
+                x="count",
+                y="Marca",
+                orientation='h',
+                text="count",
+                color_discrete_sequence=['#607274']
+            )
+
+            fig_marca.update_layout(
+                yaxis={
+                    'categoryorder': 'total ascending'
+                },
+                height=450,
+                margin=dict(t=10, b=10),
+                xaxis_title=None,
+                yaxis_title=None
+            )
+
+            st.plotly_chart(
+                fig_marca,
                 use_container_width=True,
                 config=config_fixo
             )
@@ -704,60 +799,5 @@ elif choice == "📝 Editar":
                     ]
                 )
 
-            if st.form_submit_button("Atualizar"):
-
-                df.loc[idx] = [
-                    e_a,
-                    e_n,
-                    ", ".join(e_e),
-                    ", ".join(e_oc),
-                    e_f,
-                    e_not,
-                    e_m,
-                    e_p
-                ]
-
-                df.to_csv(
-                    DB_FILE,
-                    index=False,
-                    encoding='utf-8-sig'
-                )
-
-                st.success("Atualizado!")
-
-                st.rerun()
-
-# =========================================================
-# APAGAR
-# =========================================================
-
-elif choice == "🗑️ Apagar":
-
-    st.subheader("Eliminar")
-
-    if not df.empty:
-
-        p_del = st.selectbox(
-            "Perfume:",
-            sorted(
-                df["Nome do Perfume"]
-                .unique()
-                .tolist()
-            )
-        )
-
-        if st.button("Confirmar"):
-
-            df = df[
-                df["Nome do Perfume"] != p_del
-            ]
-
-            df.to_csv(
-                DB_FILE,
-                index=False,
-                encoding='utf-8-sig'
-            )
-
-            st.warning("Eliminado.")
-
-            st.rerun()
+            if st.
+            
