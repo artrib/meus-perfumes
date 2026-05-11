@@ -86,7 +86,7 @@ if choice == "🔍 Pesquisar":
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Donwload (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 
         st.markdown("---")
         config_fixo = {'staticPlot': True}
