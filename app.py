@@ -79,8 +79,21 @@ if choice == "🔍 Pesquisar":
     
     st.write(f"Total: {len(result)} Perfumes")
     
-    if not df.empty:
-        st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
+    # COLE ESTE BLOCO NOVO:
+        st.data_editor(
+            result.reset_index(drop=True), 
+            use_container_width=True, 
+            hide_index=True, 
+            disabled=True,
+            column_config={
+                "Ano": st.column_config.TextColumn("Ano", width="small"),
+                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="large"),
+                "Marca": st.column_config.TextColumn("Marca", width="medium"),
+                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=450), 
+                "Estações do Ano": st.column_config.TextColumn("Estações", width="medium"),
+                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões", width="medium"),
+            }
+        )
         
         if not result.empty:
             # Botão centralizado usando colunas para garantir o alinhamento
