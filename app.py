@@ -172,7 +172,11 @@ elif choice == "📝 Editar":
             with c1:
                 e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
                 e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
-                e_e = st.selectbox("Estação", ESTACOES_LISTA, index=ESTACOES_LISTA.index(df.at[idx, "Estações do Ano"]) if df.at[idx, "Estações do Ano"] in ESTACOES_LISTA else 0)
+                # Transformar o que está no banco de dados em uma lista para o multiselect entender
+at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
+
+# O novo campo com a mesma dinâmica das Ocasiões
+e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
                 e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
             with c2:
                 e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
