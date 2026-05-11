@@ -114,7 +114,7 @@ fig1.update_layout(
 
 st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-        with col2:
+     with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(30).reset_index()
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
