@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
-# CSS para MAXIMIZAR o Menu Lateral (Sidebar)
+# CSS para MAXIMIZAR o Menu Lateral e Centralizar Botões
 st.markdown("""
     <style>
     /* Aumenta o título do menu lateral */
@@ -28,6 +28,11 @@ st.markdown("""
     /* Aumenta o tamanho do círculo do rádio botão */
     [data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
         margin-bottom: 20px !important;
+    }
+    /* Estilo para centralizar o botão de download */
+    .stDownloadButton {
+        display: flex;
+        justify-content: center;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -55,7 +60,7 @@ def load_data():
 
 df = load_data()
 
-# --- INTERFACE ---
+# --- INTERFACE PRINCIPAL ---
 st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
@@ -63,7 +68,7 @@ choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input("", placeholder="Pesquisar na coleção...")
     
     if not df.empty:
         if search:
@@ -84,16 +89,19 @@ if choice == "🔍 Pesquisar":
             column_config={"Ano": st.column_config.TextColumn("Ano", width=50)}
         )
         
-        # --- BOTÃO DESCARREGAR REINCLUÍDO ---
+        # --- BOTÃO DESCARREGAR CENTRALIZADO ---
         if not result.empty:
             st.markdown("<br>", unsafe_allow_html=True)
-            csv = result.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(
-                label="📥 Descarregar resultados (CSV)",
-                data=csv,
-                file_name="meus_perfumes.csv",
-                mime="text/csv"
-            )
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+            with col_btn2:
+                csv = result.to_csv(index=False).encode('utf-8-sig')
+                st.download_button(
+                    label="📥 Descarregar resultados (CSV)",
+                    data=csv,
+                    file_name="meus_perfumes.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
 
         st.markdown("---")
         config_estatico = {'staticPlot': True}
@@ -122,10 +130,18 @@ if choice == "🔍 Pesquisar":
         with col3:
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
+            
+            # Contraste para Cítrico Aromática
             color_map = {"Cítrico aromática": "#D35400", "Cítrico aromático": "#D35400"}
+            
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color='Família Olfativa', color_discrete_map=color_map, color_discrete_sequence=['#8EACCD', '#94A684', '#F9F3CC', '#D2E0FB', '#B0A695'])
             fig3.update_traces(textinfo='percent', hoverinfo='label+percent')
-            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5, font=dict(size=22), itemsizing='constant'), margin=dict(t=40, b=80, l=10, r=10), height=480)
+            fig3.update_layout(
+                showlegend=True, 
+                legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5, font=dict(size=22), itemsizing='constant'),
+                margin=dict(t=40, b=80, l=10, r=10), 
+                height=480 
+            )
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
@@ -144,7 +160,7 @@ if choice == "🔍 Pesquisar":
         fig5.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=0, l=0, r=0), height=350)
         st.plotly_chart(fig5, use_container_width=True, config=config_estatico)
 
-# --- ABAS DE GESTÃO ---
+# --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
     st.subheader("Novo Registo")
     with st.form("add_form"):
@@ -167,45 +183,6 @@ elif choice == "➕ Adicionar":
                 st.success("Adicionado!")
                 st.rerun()
 
+# --- ABA EDITAR ---
 elif choice == "📝 Editar":
     st.subheader("Editar Perfume")
-    if not df.empty:
-        p_sel = st.selectbox("Selecione o perfume para editar:", sorted(df["Nome do Perfume"].unique().tolist()))
-        idx = df[df["Nome do Perfume"] == p_sel].index[0]
-        
-        with st.form("edit_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
-                e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
-                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações do Ano"]))
-                e_ocasiao = st.text_input("Ocasião de Uso", value=str(df.loc[idx, "Ocasiões de Uso"]))
-            with c2:
-                e_fam = st.text_input("Família Olfativa", value=str(df.loc[idx, "Família Olfativa"]))
-                e_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
-                e_ano = st.text_input("Ano", value=str(df.loc[idx, "Ano"]))
-                e_notas = st.text_area("Notas Olfativas", value=str(df.loc[idx, "Notas Olfativas"]))
-            
-            if st.form_submit_button("Atualizar Dados"):
-                df.at[idx, "Ano"] = e_ano
-                df.at[idx, "Nome do Perfume"] = e_nome
-                df.at[idx, "Estações do Ano"] = e_est
-                df.at[idx, "Ocasiões de Uso"] = e_ocasiao
-                df.at[idx, "Família Olfativa"] = e_fam
-                df.at[idx, "Notas Olfativas"] = e_notas
-                df.at[idx, "Marca"] = e_marca
-                df.at[idx, "Perfumista"] = e_perf
-                
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success(f"Alterações em '{e_nome}' gravadas com sucesso!")
-                st.rerun()
-
-elif choice == "🗑️ Apagar":
-    st.subheader("Apagar")
-    if not df.empty:
-        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("Confirmar Eliminação"):
-            df = df[df["Nome do Perfume"] != p_del]
-            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.success("Removido.")
-            st.rerun()
