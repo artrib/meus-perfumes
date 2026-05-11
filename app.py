@@ -84,11 +84,6 @@ if choice == "🔍 Pesquisar":
             column_config={"Ano": st.column_config.TextColumn("Ano", width=50)}
         )
         
-        if not result.empty:
-            st.markdown("<br>", unsafe_allow_html=True)
-            csv = result.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(label="📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv")
-
         st.markdown("---")
         config_estatico = {'staticPlot': True}
 
@@ -96,8 +91,7 @@ if choice == "🔍 Pesquisar":
         col1, col2 = st.columns(2)
         with col1:
             c_est = df["Estações do Ano"].value_counts().reset_index()
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", 
-                          color_discrete_sequence=['#D8C4B6'])
+            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#D8C4B6'])
             fig1.update_traces(textangle=0, textposition='outside') 
             fig1.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=0, l=0, r=0), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_estatico)
@@ -105,8 +99,7 @@ if choice == "🔍 Pesquisar":
         with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(10).reset_index()
-            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", 
-                          color_discrete_sequence=['#4F709C']) 
+            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#4F709C']) 
             fig2.update_traces(textangle=0, textposition='outside') 
             fig2.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=40, b=0, l=0, r=0), height=350)
             st.plotly_chart(fig2, use_container_width=True, config=config_estatico)
@@ -118,33 +111,91 @@ if choice == "🔍 Pesquisar":
         with col3:
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
-            
-            color_map = {
-                "Cítrico aromática": "#D35400",
-                "Cítrico aromático": "#D35400"
-            }
-            
-            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', 
-                          color='Família Olfativa',
-                          color_discrete_map=color_map,
-                          color_discrete_sequence=['#8EACCD', '#94A684', '#F9F3CC', '#D2E0FB', '#B0A695'])
-            
+            color_map = {"Cítrico aromática": "#D35400", "Cítrico aromático": "#D35400"}
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color='Família Olfativa', color_discrete_map=color_map, color_discrete_sequence=['#8EACCD', '#94A684', '#F9F3CC', '#D2E0FB', '#B0A695'])
             fig3.update_traces(textinfo='percent', hoverinfo='label+percent')
-            fig3.update_layout(
-                showlegend=True, 
-                legend=dict(
-                    orientation="h", 
-                    yanchor="top", 
-                    y=-0.2, 
-                    xanchor="center", 
-                    x=0.5,
-                    font=dict(size=22),
-                    itemsizing='constant'
-                ),
-                margin=dict(t=40, b=80, l=10, r=10), 
-                height=480 
-            )
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5, font=dict(size=22), itemsizing='constant'), margin=dict(t=40, b=80, l=10, r=10), height=480)
             st.plotly_chart(fig3, use_container_width=True, config=config_estatico)
 
         with col4:
-            c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(1
+            c_perf = df["Perfumista"].replace("", "Desconhecido").value_counts().nlargest(10).reset_index()
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
+            fig4.update_traces(textangle=0, textposition='outside')
+            fig4.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, yaxis={'categoryorder':'total ascending'}, margin=dict(t=40, b=0, l=0, r=0), height=350)
+            st.plotly_chart(fig4, use_container_width=True, config=config_estatico)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- LINHA 3: MARCAS ---
+        c_mar = df["Marca"].value_counts().nlargest(10).reset_index()
+        fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
+        fig5.update_traces(textangle=0, textposition='outside')
+        fig5.update_layout(showlegend=False, xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=0, l=0, r=0), height=350)
+        st.plotly_chart(fig5, use_container_width=True, config=config_estatico)
+
+# --- ABAS DE GESTÃO ---
+elif choice == "➕ Adicionar":
+    st.subheader("Novo Registo")
+    with st.form("add_form"):
+        c1, c2 = st.columns(2)
+        with c1:
+            nome = st.text_input("Nome do Perfume *")
+            marca = st.text_input("Marca")
+            est = st.selectbox("Estação", ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV","MEIA-ESTAÇÃO", "Geral"])
+            ocasiao = st.text_input("Ocasião de Uso")
+        with c2:
+            fam = st.text_input("Família Olfativa")
+            perf = st.text_input("Perfumista")
+            ano = st.text_input("Ano")
+            notas = st.text_area("Notas")
+        if st.form_submit_button("Guardar"):
+            if nome:
+                new_row = pd.DataFrame([{"Ano": ano, "Nome do Perfume": nome, "Estações do Ano": est, "Ocasiões de Uso": ocasiao, "Família Olfativa": fam, "Notas Olfativas": notas, "Marca": marca, "Perfumista": perf}])
+                df = pd.concat([df, new_row], ignore_index=True)
+                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                st.success("Adicionado!")
+                st.rerun()
+
+elif choice == "📝 Editar":
+    st.subheader("Editar Perfume")
+    if not df.empty:
+        p_sel = st.selectbox("Selecione o perfume para editar:", sorted(df["Nome do Perfume"].unique().tolist()))
+        idx = df[df["Nome do Perfume"] == p_sel].index[0]
+        
+        with st.form("edit_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                e_nome = st.text_input("Nome", value=str(df.loc[idx, "Nome do Perfume"]))
+                e_marca = st.text_input("Marca", value=str(df.loc[idx, "Marca"]))
+                e_est = st.text_input("Estação", value=str(df.loc[idx, "Estações do Ano"]))
+                e_ocasiao = st.text_input("Ocasião de Uso", value=str(df.loc[idx, "Ocasiões de Uso"]))
+            with c2:
+                e_fam = st.text_input("Família Olfativa", value=str(df.loc[idx, "Família Olfativa"]))
+                e_perf = st.text_input("Perfumista", value=str(df.loc[idx, "Perfumista"]))
+                e_ano = st.text_input("Ano", value=str(df.loc[idx, "Ano"]))
+                e_notas = st.text_area("Notas Olfativas", value=str(df.loc[idx, "Notas Olfativas"]))
+            
+            if st.form_submit_button("Atualizar Dados"):
+                # Atualização rigorosa de todas as colunas
+                df.at[idx, "Ano"] = e_ano
+                df.at[idx, "Nome do Perfume"] = e_nome
+                df.at[idx, "Estações do Ano"] = e_est
+                df.at[idx, "Ocasiões de Uso"] = e_ocasiao
+                df.at[idx, "Família Olfativa"] = e_fam
+                df.at[idx, "Notas Olfativas"] = e_notas
+                df.at[idx, "Marca"] = e_marca
+                df.at[idx, "Perfumista"] = e_perf
+                
+                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                st.success(f"Alterações em '{e_nome}' gravadas com sucesso!")
+                st.rerun()
+
+elif choice == "🗑️ Apagar":
+    st.subheader("Apagar")
+    if not df.empty:
+        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
+        if st.button("Confirmar Eliminação"):
+            df = df[df["Nome do Perfume"] != p_del]
+            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+            st.success("Removido.")
+            st.rerun()
