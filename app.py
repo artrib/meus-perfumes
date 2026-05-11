@@ -4,28 +4,44 @@ import os
 import unicodedata
 import plotly.express as px
 
-# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO (MANTIDO)
+# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO REFORÇADO
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
 st.markdown("""
     <style>
+    /* Esconde o header nativo e ajusta o topo */
     header {visibility: hidden;}
-    .block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 1rem !important;
+    }
     
-    /* Remoção do contorno de foco em todos os elementos */
-    *:focus, [data-testid="stDataEditor"] *:focus, div[data-baseweb="input"] > div:focus-within {
+    /* REMOÇÃO AGRESSIVA DE CONTORNOS VERMELHOS E FOCO */
+    *:focus, [data-baseweb="input"] > div:focus-within, [data-testid="stDataEditor"] *:focus {
         outline: none !important;
         border-color: #dcdcdc !important;
         box-shadow: none !important;
     }
     
+    /* Menu Lateral Maximizado */
     [data-testid="stSidebar"] .stRadio label p {
         font-size: 24px !important;
         font-weight: 800 !important;
         color: #4F709C !important;
     }
 
-    .stDownloadButton { display: flex; justify-content: center; margin: 20px 0; }
+    /* Centralização do botão de download */
+    .stDownloadButton {
+        display: flex;
+        justify-content: center;
+        margin: 25px 0;
+    }
+
+    /* Pequeno espaçamento entre colunas de gráficos */
+    [data-testid="column"] {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -50,23 +66,22 @@ def load_data():
 
 df = load_data()
 
-# 3. INTERFACE
+# 3. INTERFACE PRINCIPAL
 st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
+# --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    # Campo de pesquisa que aceita múltiplos termos
-    search = st.text_input("", placeholder="Ex: 'Cha Blue' para encontrar Chanel Bleu")
+    search = st.text_input("", placeholder="Ex: 'Dio Fah' (Pesquisa relacional)")
     
     result = df.copy()
     if search:
-        # SISTEMA DE PESQUISA RELACIONAL (CORRIGIDO)
+        # SISTEMA DE PESQUISA RELACIONAL (Lógica AND)
         termos = search.split()
         for termo in termos:
             t_norm = remover_acentos(termo)
-            # A cada termo, filtramos o que restou do resultado anterior (Lógica AND)
             mask = result.apply(lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(), axis=1)
             result = result[mask]
     
@@ -79,58 +94,65 @@ if choice == "🔍 Pesquisar":
             csv = result.to_csv(index=False).encode('utf-8-sig')
             st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv")
 
-        st.markdown("---")
+        st.markdown("<br>", unsafe_allow_html=True)
         config_f = {'staticPlot': True}
         
-        # Mapeamento de cores solicitado
+        # CORES MINIMALISTAS COM ALTO CONTRASTE (Slate, Sage, Terracotta, Sand, Deep Blue, Muted Gold)
+        paleta_minimalista = ['#4A55A2', '#789461', '#C08261', '#E1D4BB', '#526D82', '#D4AD60']
+        
         mapa_cores = {
-            "Cítrico aromático": "#94A684", 
-            "Aromático fougère": "#8EACCD",
-            "Amadeirado": "#B0A695"
+            "Cítrico aromático": "#789461",  # Sage/Verde Mudo
+            "Aromático fougère": "#4A55A2",  # Deep Blue/Contrast
+            "Amadeirado especiado": "#C08261" # Terracotta
         }
 
-        # Gráficos Linha 1
-        c1, c2 = st.columns(2)
-        with c1:
+        # --- LINHA 1 ---
+        col1, col2 = st.columns(2)
+        with col1:
             e_counts = df["Estações do Ano"].value_counts().reset_index()
-            fig1 = px.bar(e_counts, x="Estações do Ano", y="count", color_discrete_sequence=['#B0A695'])
+            fig1 = px.bar(e_counts, x="Estações do Ano", y="count", color_discrete_sequence=['#E1D4BB'])
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
             st.plotly_chart(fig1, use_container_width=True, config=config_f)
             
-        with c2:
+        with col2:
             notas = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             n_counts = notas[notas != ""].value_counts().nlargest(30).reset_index()
-            fig2 = px.bar(n_counts, x="count", y="Notas Olfativas", orientation='h', color_discrete_sequence=['#8EACCD'])
+            fig2 = px.bar(n_counts, x="count", y="Notas Olfativas", orientation='h', color_discrete_sequence=['#526D82'])
             fig2.update_layout(yaxis={'categoryorder':'total ascending'}, height=700, margin=dict(t=10, b=10))
             st.plotly_chart(fig2, use_container_width=True, config=config_f)
 
-        # Gráficos Linha 2
-        c3, c4 = st.columns(2)
-        with c3:
+        # --- LINHA 2 ---
+        col3, col4 = st.columns(2)
+        with col3:
             fams = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             f_counts = fams[fams != ""].value_counts().nlargest(6).reset_index()
-            fig3 = px.pie(f_counts, values='count', names='Família Olfativa', color='Família Olfativa', color_discrete_map=mapa_cores)
+            
+            fig3 = px.pie(f_counts, values='count', names='Família Olfativa', 
+                          color='Família Olfativa', color_discrete_map=mapa_cores,
+                          color_discrete_sequence=paleta_minimalista)
+            
             fig3.update_layout(
                 showlegend=True,
                 legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center", font=dict(size=22), itemsizing='constant'),
-                margin=dict(t=0, b=100), height=500
+                margin=dict(t=0, b=120), height=500
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_f)
 
-        with c4:
+        with col4:
             perfs = df["Perfumista"].replace(["", "nan"], "Desconhecido").value_counts().nlargest(15).reset_index()
-            fig4 = px.bar(perfs, x="count", y="Perfumista", orientation='h', color_discrete_sequence=['#94A684'])
-            fig4.update_layout(yaxis={'categoryorder':'total ascending'}, margin=dict(t=10, b=10))
+            fig4 = px.bar(perfs, x="count", y="Perfumista", orientation='h', color_discrete_sequence=['#789461'])
+            fig4.update_layout(yaxis={'categoryorder':'total ascending'}, height=500, margin=dict(t=10, b=10))
             st.plotly_chart(fig4, use_container_width=True, config=config_f)
 
+        # --- LINHA 3 ---
         marcas = df["Marca"].value_counts().nlargest(15).reset_index()
-        fig5 = px.bar(marcas, x="Marca", y="count", color_discrete_sequence=['#607274'])
+        fig5 = px.bar(marcas, x="Marca", y="count", color_discrete_sequence=['#526D82'])
         fig5.update_layout(margin=dict(t=10, b=10))
         st.plotly_chart(fig5, use_container_width=True, config=config_f)
 
-# AS DEMAIS ABAS CONTINUAM IGUAIS PARA NÃO ALTERAR A FUNCIONALIDADE QUE JÁ ESTÁ OK
+# --- DEMAIS ABAS (ADICIONAR/EDITAR/APAGAR) ---
 elif choice == "➕ Adicionar":
-    st.subheader("Novo Registo")
+    st.subheader("Novo Perfume")
     with st.form("add"):
         c1, c2 = st.columns(2)
         with c1:
@@ -180,4 +202,4 @@ elif choice == "🗑️ Apagar":
         if st.button("Confirmar Eliminação"):
             df = df[df["Nome do Perfume"] != p_del]
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.warning("Eliminado."); st.rerun()
+            st.warning("Removido."); st.rerun()
