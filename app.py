@@ -95,7 +95,7 @@ if choice == "🔍 Pesquisar":
             }
         )
         
-        if not result.empty:
+    if not result.empty:
             # Botão centralizado usando colunas para garantir o alinhamento
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
