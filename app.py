@@ -4,42 +4,39 @@ import os
 import unicodedata
 import plotly.express as px
 
-# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO REFINADO
+# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO REFORÇADO
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
 st.markdown("""
     <style>
-    /* Reduz o espaço vazio no topo da página */
+    /* Ajuste do topo para não cortar o título */
     .block-container {
-        padding-top: 0rem !important;
+        padding-top: 2rem !important;
         padding-bottom: 1rem !important;
     }
     
-    /* Remove contorno vermelho de seleção (celulas e inputs) e troca por branco/cinza claro */
-    input:focus, textarea:focus, [data-baseweb="select"] > div:focus {
-        border-color: #f0f2f6 !important;
+    /* REMOVER CONTORNO VERMELHO EM TODO O APP */
+    *:focus {
+        outline: none !important;
+        border-color: rgba(0,0,0,0) !important;
         box-shadow: none !important;
     }
-    [data-testid="stDataEditor"] div:focus {
-        outline: 1px solid #ffffff !important;
+    [data-testid="stDataEditor"] *, [data-baseweb="base-input"] * {
+        outline: none !important;
+        border-color: #dcdcdc !important;
     }
-
-    /* Menu Lateral Maximizado */
+    
+    /* Menu Lateral */
     [data-testid="stSidebar"] .stRadio label p {
         font-size: 24px !important;
         font-weight: 800 !important;
         color: #4F709C !important;
     }
-    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label p {
-        font-size: 22px !important;
-        font-weight: 500 !important;
-    }
-
-    /* Centralização do botão de download */
+    
+    /* Centralização do botão */
     .stDownloadButton {
         display: flex;
         justify-content: center;
-        padding-top: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -66,8 +63,8 @@ def load_data():
 
 df = load_data()
 
-# 3. INTERFACE PRINCIPAL
-st.markdown("<h2 style='text-align: left; font-size: 34px; margin-bottom: 0px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
+# 3. INTERFACE
+st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
@@ -95,10 +92,16 @@ if choice == "🔍 Pesquisar":
         st.markdown("---")
         config_fixo = {'staticPlot': True}
 
-        # Paleta de Cores Minimalista/Moderna
-        cores_minimalistas = ['#8EACCD', '#D2E0FB', '#94A684', '#B0A695', '#E5BA73', '#C08261']
+        # PALETA MODERNA COM TROCA DE CORES SOLICITADA
+        # Cores: Azul Acinzentado, Salvia, Areia, Terracota, Ardósia, Mostarda
+        paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
+        
+        # Mapeamento manual para garantir a troca específica
+        cores_pizza = {
+            "Cítrico aromático": "#94A684", # Cor que seria do Aromático Fougere
+            "Aromático fougère": "#8EACCD"  # Outra cor de contraste
+        }
 
-        # --- LINHA 1: ESTAÇÕES E NOTAS ---
         col1, col2 = st.columns(2)
         with col1:
             c_est = df["Estações do Ano"].value_counts().reset_index()
@@ -113,20 +116,27 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=700, margin=dict(t=10, b=10))
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
-        # --- LINHA 2: PIZZA E PERFUMISTAS ---
         col3, col4 = st.columns(2)
         with col3:
             f_s = df["Família Olfativa"].str.split('/').explode().str.strip().str.capitalize()
             c_fam = f_s[f_s != ""].value_counts().nlargest(6).reset_index()
             
-            # Gráfico de Pizza com Cores Minimalistas e Legenda Grande
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', 
-                          color_discrete_sequence=cores_minimalistas)
+                          color='Família Olfativa', color_discrete_map=cores_pizza,
+                          color_discrete_sequence=paleta_minimalista)
+            
             fig3.update_layout(
                 showlegend=True,
-                legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5, font=dict(size=22)),
+                legend=dict(
+                    orientation="h", 
+                    yanchor="top", y=-0.15, 
+                    xanchor="center", x=0.5, 
+                    font=dict(size=22),
+                    itemsizing='constant', # Mantém os quadrados da legenda grandes
+                    itemwidth=40           # Aumenta a largura dos ícones da legenda
+                ),
                 margin=dict(t=10, b=120),
-                height=480
+                height=500
             )
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
@@ -136,9 +146,8 @@ if choice == "🔍 Pesquisar":
             fig4.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title=None, yaxis_title=None, height=500, margin=dict(t=10, b=10))
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
-        # --- LINHA 3: MARCAS ---
         c_mar = df["Marca"].value_counts().nlargest(15).reset_index()
-        fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#C08261'])
+        fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
         st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
