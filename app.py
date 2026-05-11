@@ -7,7 +7,7 @@ import plotly.express as px
 # 1. Configuração de Layout
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
-# 2. CSS Customizado para Interface
+# 2. CSS Customizado
 st.markdown("""
     <style>
     [data-testid="stSidebar"] .stRadio label p {
@@ -48,25 +48,31 @@ def load_data():
 
 df = load_data()
 
-# 4. Menu e Navegação
+# 4. Título e Menu
 st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # --- ABA PESQUISAR ---
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input("", placeholder="Pesquisar por nome, nota, marca, perfumista...")
+    
+    # Lógica de Filtro
+    result = df.copy()
+    if search:
+        termos = search.split()
+        for termo in termos:
+            termo_norm = remover_acentos(termo)
+            mask = result.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(termo_norm)).any(axis=1)
+            result = result[mask]
+    
+    # EXIBIÇÃO DO NÚMERO DE PERFUMES (LOGO ABAIXO DA PESQUISA)
     if not df.empty:
-        result = df.copy()
-        if search:
-            termos = search.split()
-            for termo in termos:
-                termo_norm = remover_acentos(termo)
-                mask = result.astype(str).apply(lambda col: col.map(remover_acentos).str.contains(termo_norm)).any(axis=1)
-                result = result[mask]
+        st.markdown(f"### 📊 Total: {len(result)} perfume(s) encontrado(s)")
         
         st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
         
+        # Botão de Download Centralizado
         if not result.empty:
             st.markdown("<br>", unsafe_allow_html=True)
             col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
@@ -110,6 +116,8 @@ if choice == "🔍 Pesquisar":
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
         st.plotly_chart(fig5, use_container_width=True, config=config_est)
+    else:
+        st.info("A base de dados está vazia. Adicione perfumes no menu lateral.")
 
 # --- ABA ADICIONAR ---
 elif choice == "➕ Adicionar":
@@ -168,8 +176,8 @@ elif choice == "🗑️ Apagar":
     st.subheader("Eliminar")
     if not df.empty:
         p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("Confirmar Eliminação"):
+        if st.button("Confirmar Eliminação Permanente"):
             df = df[df["Nome do Perfume"] != p_del]
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.warning("Eliminado com sucesso.")
+            st.warning("Eliminado.")
             st.rerun()
