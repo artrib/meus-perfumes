@@ -56,7 +56,7 @@ OCASIOES_OPCOES = [
 ]
 
 # =========================================================
-# FUNÇÕES DE TRATAMENTO DE TEXTO
+# FUNÇÕES DE TRATAMENTO
 # =========================================================
 
 def remover_acentos(texto):
@@ -68,15 +68,14 @@ def remover_acentos(texto):
     ).lower()
 
 def padronizar_texto(texto):
-    """Transforma 'cítrico', 'CITRICO', 'Cítricos' em 'Citrico'"""
+    """Unifica termos (ex: Cítricos -> Citrico) para os gráficos"""
     if not texto or not isinstance(texto, str):
         return ""
-    # Remove acentos e converte para minúsculas
-    texto_limpo = remover_acentos(texto).strip()
-    # Remove o 's' final para unificar singular/plural (opcional, mas útil para notas)
-    if texto_limpo.endswith('s') and len(texto_limpo) > 4:
-        texto_limpo = texto_limpo[:-1]
-    return texto_limpo.capitalize()
+    t = remover_acentos(texto).strip()
+    # Unificação simples de plural
+    if t.endswith('s') and len(t) > 4:
+        t = t[:-1]
+    return t.capitalize()
 
 def load_data():
     cols = ["Ano", "Nome do Perfume", "Estações do Ano", "Ocasiões de Uso", 
@@ -95,16 +94,15 @@ def load_data():
     return pd.DataFrame(columns=cols)
 
 # =========================================================
-# CARREGAR DADOS
+# CARREGAR DADOS E TÍTULO
 # =========================================================
 
 df = load_data()
 
-# =========================================================
-# TÍTULO
-# =========================================================
-
-st.markdown("<h2 style='text-align:left; font-size:34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 style='text-align:left; font-size:34px;'>Caixa dos Perfumes</h2>",
+    unsafe_allow_html=True
+)
 
 # =========================================================
 # MENU
@@ -114,7 +112,7 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # =========================================================
-# PESQUISAR
+# 1. PESQUISAR E ESTATÍSTICAS
 # =========================================================
 
 if choice == "🔍 Pesquisar":
@@ -153,139 +151,30 @@ if choice == "🔍 Pesquisar":
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+                st.download_button("📥 Download (CSV)", csv, "meus_perfumes.csv", "text/csv", use_container_width=True)
 
         st.markdown("---")
 
-        # =================================================
-        # PRIMEIRA LINHA DE GRÁFICOS
-        # =================================================
+        # CONFIGURAÇÕES VISUAIS
+        config_fixo = {'staticPlot': True}
+        paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
 
         col1, col2 = st.columns(2)
 
-        # -------------------------------------------------
-        # ESTAÇÕES DO ANO
-        # -------------------------------------------------
-
+        # COLUNA 1: ESTAÇÕES E OCASIÕES
         with col1:
+            # Estações
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
-            c_est.columns = ["Estações do Ano", "count"]
-
-            fig1 = px.bar(
-                c_est,
-                x="Estações do Ano",
-                y="count",
-                text="count",
-                color_discrete_sequence=['#B0A695']
-            )
-
+            c_est.columns = ["Estação", "count"]
+            
+            fig1 = px.bar(c_est, x="Estação", y="count", text="count", color_discrete_sequence=['#B0A695'])
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(
-                xaxis_title=None, yaxis_title=None,
-                margin=dict(t=20, b=10), height=400
-            )
-
+            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-            # -------------------------------------------------
-            # NOVO: OCASIÕES DE USO (Logo abaixo das Estações)
-            # -------------------------------------------------
             st.write("") # Espaçador
-            c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
-            c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
-            c_oc.columns = ["Ocasião", "count"]
 
-            fig_oc = px.bar(
-                c_oc,
-                x="count",
-                y="Ocasião",
-                orientation='h',
-                text="count",
-                color_discrete_sequence=['#C08261']
-            )
-
-            fig_oc.update_layout(
-                yaxis={'categoryorder': 'total ascending'},
-                xaxis_title=None, yaxis_title=None,
-                margin=dict(t=20, b=10), height=350
-            )
-            st.plotly_chart(fig_oc, use_container_width=True, config=config_fixo)
-
-        # -------------------------------------------------
-        # NOTAS OLFATIVAS
-        # -------------------------------------------------
-
-        with col2:
-            n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
-            c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
-            c_not.columns = ["Notas Olfativas", "count"]
-
-            altura_notas = max(400, len(c_not) * 22)
-
-            fig2 = px.bar(
-                c_not,
-                x="count",
-                y="Notas Olfativas",
-                orientation='h',
-                text="count",
-                color_discrete_sequence=['#8EACCD']
-            )
-
-            fig2.update_layout(
-yaxis={'categoryorder': 'total ascending'},
-                height=770, 
-                margin=dict(t=10, b=10),
-                xaxis_title=None, yaxis_title=None
-            )
-            st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
-
-        # =================================================
-        # SEGUNDA LINHA DE GRÁFICOS
-        # =================================================
-        col3, col4 = st.columns(2)
-
-        with col3:
-            f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
-            c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
-            c_fam.columns = ["Família Olfativa", "count"]
-
-            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-            fig3.update_layout(
-                showlegend=True,
-                legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
-                margin=dict(t=10, b=100), height=340
-            )
-            st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
-
-        with col4:
-            c_perf = df["Perfumista"].replace(["", "nan"], "Desconhecido")
-            c_perf = c_perf.apply(lambda x: padronizar_texto(x) if x != "Desconhecido" else x)
-            c_perf = c_perf.value_counts().nlargest(15).reset_index(name="count")
-            c_perf.columns = ["Perfumista", "count"]
-
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
-            fig4.update_layout(
-                yaxis={'categoryorder': 'total ascending'},
-                height=450, margin=dict(t=10, b=10),
-                xaxis_title=None, yaxis_title=None
-            )
-            st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
-
-        # =================================================
-        # LINHA FINAL: MARCAS
-        # =================================================
-        st.markdown("---")
-        st.subheader("Distribuição por Marcas")
-        
-        c_marca = df["Marca"].replace(["", "nan"], "N/A").apply(padronizar_texto).value_counts().nlargest(20).reset_index(name="count")
-        c_marca.columns = ["Marca", "count"]
-
-        fig_marca = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
-        fig_marca.update_traces(textposition='outside')
-        fig_marca.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
-        st.plotly_chart(fig_marca, use_container_width=True, config=config_fixo)
-        
-# =========================================================
-# ADICIONAR / EDITAR / APAGAR (Lógica permanece igual à anterior)
-# =========================================================
+            # Ocasiões
+            c_oc = df["Ocasiões de Uso"].str.split
+            
