@@ -66,7 +66,7 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar... (Ex: 'Dio Fah')")
+    search = st.text_input("", placeholder="Pesquisar...")
     
     result = df.copy()
     if search:
