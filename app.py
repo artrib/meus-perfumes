@@ -84,6 +84,17 @@ if choice == "🔍 Pesquisar":
             column_config={"Ano": st.column_config.TextColumn("Ano", width=50)}
         )
         
+        # --- BOTÃO DESCARREGAR REINCLUÍDO ---
+        if not result.empty:
+            st.markdown("<br>", unsafe_allow_html=True)
+            csv = result.to_csv(index=False).encode('utf-8-sig')
+            st.download_button(
+                label="📥 Descarregar resultados (CSV)",
+                data=csv,
+                file_name="meus_perfumes.csv",
+                mime="text/csv"
+            )
+
         st.markdown("---")
         config_estatico = {'staticPlot': True}
 
@@ -176,7 +187,6 @@ elif choice == "📝 Editar":
                 e_notas = st.text_area("Notas Olfativas", value=str(df.loc[idx, "Notas Olfativas"]))
             
             if st.form_submit_button("Atualizar Dados"):
-                # Atualização rigorosa de todas as colunas
                 df.at[idx, "Ano"] = e_ano
                 df.at[idx, "Nome do Perfume"] = e_nome
                 df.at[idx, "Estações do Ano"] = e_est
