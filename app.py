@@ -33,7 +33,7 @@ st.markdown("""
 
 # 2. CONSTANTES E BASE DE DADOS
 DB_FILE = "perfumes_data.csv"
-ESTACOES_LISTA = ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "Geral"]
+ESTACOES_OPCOES = ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", "OUTONO", "INVERNO", "OUT/INV", "MEIA-ESTAÇÃO", "GERAL"]
 OCASIOES_OPCOES = ["CASUAL DIA", "CASUAL NOITE", "TRABALHO", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL"]
 
 def remover_acentos(texto):
@@ -53,10 +53,10 @@ def load_data():
 df = load_data()
 
 # 3. INTERFACE
-st.markdown("<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: left; font-size: 36px;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
-choice = st.sidebar.radio("MENU DE GESTÃO", menu)
+choice = st.sidebar.radio("", menu)
 
 if choice == "🔍 Pesquisar":
     search = st.text_input("", placeholder="Pesquisar...")
@@ -80,7 +80,7 @@ if choice == "🔍 Pesquisar":
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+                st.download_button("📥 DOWNLOAD (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 
         st.markdown("---")
         config_fixo = {'staticPlot': True}
@@ -134,7 +134,7 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
         # RECOLOCADO: Gráfico de Marcas
-        st.markdown("##### Marcas com mais presença")
+        st.markdown("")
         c_mar = df["Marca"].value_counts().nlargest(15).reset_index()
         fig5 = px.bar(c_mar, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
