@@ -102,7 +102,7 @@ if choice == "🔍 Pesquisar":
                 csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 
-        st.markdown("---")
+st.markdown("---")
         config_fixo = {'staticPlot': True}
 
         # PALETA ANTERIOR RESTAURADA
