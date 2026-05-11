@@ -96,9 +96,23 @@ if choice == "🔍 Pesquisar":
         col1, col2 = st.columns(2)
         with col1:
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip().value_counts().reset_index()
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
-            st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
+            fig1 = px.bar(
+    c_est,
+    x="Estações do Ano",
+    y="count",
+    text="count",
+    color_discrete_sequence=['#B0A695']
+)
+
+fig1.update_traces(width=0.4)
+
+fig1.update_layout(
+    xaxis_title=None,
+    yaxis_title=None,
+    margin=dict(t=10, b=10)
+)
+
+st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
         with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(30).reset_index()
