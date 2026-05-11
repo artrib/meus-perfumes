@@ -114,21 +114,38 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 # =========================================================
-# PESQUISAR
+# 1. PESQUISAR E ESTATÍSTICAS
 # =========================================================
 
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar...")
+    # Adicionamos uma linha com dois elementos: o campo de busca e o seletor de coluna
+    col_busca, col_filtro = st.columns([3, 1])
+    
+    with col_busca:
+        search = st.text_input("", placeholder="Digite o que procura...")
+    
+    with col_filtro:
+        # Permite escolher onde pesquisar
+        opcoes_busca = ["Tudo", "Notas Olfativas", "Marca", "Nome do Perfume", "Família Olfativa"]
+        local_busca = st.selectbox("Pesquisar em:", opcoes_busca)
+
     result = df.copy()
 
     if search:
         termos = search.split()
         for termo in termos:
             t_norm = remover_acentos(termo)
-            mask = result.apply(
-                lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
-                axis=1
-            )
+            
+            if local_busca == "Tudo":
+                # Lógica original: pesquisa em todas as colunas
+                mask = result.apply(
+                    lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
+                    axis=1
+                )
+            else:
+                # Lógica específica: pesquisa apenas na coluna selecionada
+                mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
+            
             result = result[mask].copy()
 
     st.write(f"{len(result)} perfumes")
