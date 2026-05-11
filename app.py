@@ -4,29 +4,51 @@ import os
 import unicodedata
 import plotly.express as px
 
-# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO
-st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
+# =========================================================
+# CONFIGURAÇÃO DA PÁGINA
+# =========================================================
+
+st.set_page_config(
+    page_title="Gestão de Perfumes",
+    layout="wide",
+    page_icon="👃"
+)
+
+# =========================================================
+# CSS PERSONALIZADO
+# =========================================================
 
 st.markdown("""
-    <style>
-    .block-container {
-        padding-top: 2.5rem !important;
-        padding-bottom: 1rem !important;
-    }
-    *:focus, [data-baseweb="input"] > div:focus-within, [data-testid="stDataEditor"] *:focus {
-        outline: none !important;
-        border-color: #dcdcdc !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] .stRadio label p {
-        font-size: 24px !important;
-        font-weight: 800 !important;
-        color: #4F709C !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+<style>
 
-# 2. CONSTANTES E BASE DE DADOS
+.block-container {
+    padding-top: 2.5rem !important;
+    padding-bottom: 1rem !important;
+}
+
+*:focus,
+[data-baseweb="input"] > div:focus-within,
+[data-testid="stDataEditor"] *:focus {
+
+    outline: none !important;
+    border-color: #dcdcdc !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] .stRadio label p {
+
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    color: #4F709C !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# CONSTANTES
+# =========================================================
+
 DB_FILE = "perfumes_data.csv"
 
 ESTACOES_LISTA = [
@@ -50,14 +72,20 @@ OCASIOES_OPCOES = [
     "ESPECIAL"
 ]
 
+# =========================================================
+# FUNÇÕES
+# =========================================================
+
 def remover_acentos(texto):
+
     if not isinstance(texto, str):
-        return str(texto)
+        texto = str(texto)
 
     return "".join(
         c for c in unicodedata.normalize('NFD', texto)
         if unicodedata.category(c) != 'Mn'
     ).lower()
+
 
 def load_data():
 
@@ -73,27 +101,62 @@ def load_data():
     ]
 
     if os.path.exists(DB_FILE):
+
         try:
-            df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
+
+            df = pd.read_csv(
+                DB_FILE,
+                encoding='utf-8-sig'
+            )
+
             df.columns = df.columns.str.strip()
+
+            # GARANTIR TODAS AS COLUNAS
+            for col in cols:
+
+                if col not in df.columns:
+                    df[col] = ""
+
             return df.fillna("").astype(str)[cols]
 
-        except:
+        except Exception as e:
+
+            st.error(f"Erro ao carregar CSV: {e}")
+
             return pd.DataFrame(columns=cols)
 
     return pd.DataFrame(columns=cols)
 
+# =========================================================
+# CARREGAR DADOS
+# =========================================================
+
 df = load_data()
 
-# 3. INTERFACE
+# =========================================================
+# TÍTULO
+# =========================================================
+
 st.markdown(
-    "<h2 style='text-align: left; font-size: 34px;'>Caixa dos Perfumes</h2>",
+    "<h2 style='text-align:left; font-size:34px;'>Caixa dos Perfumes</h2>",
     unsafe_allow_html=True
 )
 
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
+# =========================================================
+# MENU
+# =========================================================
 
-choice = st.sidebar.radio("MENU DE GESTÃO", menu)
+menu = [
+    "🔍 Pesquisar",
+    "➕ Adicionar",
+    "📝 Editar",
+    "🗑️ Apagar"
+]
+
+choice = st.sidebar.radio(
+    "MENU DE GESTÃO",
+    menu
+)
 
 # =========================================================
 # PESQUISAR
@@ -101,9 +164,16 @@ choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
 
-    search = st.text_input("", placeholder="Pesquisar...")
+    search = st.text_input(
+        "",
+        placeholder="Pesquisar..."
+    )
 
     result = df.copy()
+
+    # -----------------------------------------------------
+    # FILTRO DE PESQUISA
+    # -----------------------------------------------------
 
     if search:
 
@@ -114,20 +184,24 @@ if choice == "🔍 Pesquisar":
             t_norm = remover_acentos(termo)
 
             mask = result.apply(
-                lambda row: row.astype(str)
+                lambda row:
+                row.astype(str)
                 .map(remover_acentos)
                 .str.contains(t_norm)
                 .any(),
                 axis=1
             )
 
-            result = result[mask]
+            result = result[mask].copy()
 
-    st.write(f" {len(result)} perfumes")
+    st.write(f"{len(result)} perfumes")
+
+    # -----------------------------------------------------
+    # TABELA
+    # -----------------------------------------------------
 
     if not df.empty:
 
-        # TABELA
         st.data_editor(
             result.reset_index(drop=True),
             use_container_width=True,
@@ -136,46 +210,57 @@ if choice == "🔍 Pesquisar":
 
             column_config={
 
-                "Ano": st.column_config.TextColumn(
+                "Ano":
+                st.column_config.TextColumn(
                     "Ano",
-                    width=50
+                    width=55
                 ),
 
-                "Nome do Perfume": st.column_config.TextColumn(
+                "Nome do Perfume":
+                st.column_config.TextColumn(
                     "Nome do Perfume",
                     width="medium"
                 ),
 
-                "Marca": st.column_config.TextColumn(
+                "Marca":
+                st.column_config.TextColumn(
                     "Marca",
                     width=120
                 ),
 
-                "Notas Olfativas": st.column_config.TextColumn(
+                "Notas Olfativas":
+                st.column_config.TextColumn(
                     "Notas Olfativas",
-                    width=200
+                    width=220
                 ),
 
-                "Estações do Ano": st.column_config.TextColumn(
+                "Estações do Ano":
+                st.column_config.TextColumn(
                     "Estações do Ano",
-                    width=110
+                    width=120
                 ),
 
-                "Ocasiões de Uso": st.column_config.TextColumn(
+                "Ocasiões de Uso":
+                st.column_config.TextColumn(
                     "Ocasiões de Uso",
-                    width=115
-                ),
+                    width=120
+                )
             }
         )
 
-        # BOTÃO DOWNLOAD
+        # -------------------------------------------------
+        # DOWNLOAD CSV
+        # -------------------------------------------------
+
         if not result.empty:
 
             _, col_center, _ = st.columns([1, 2, 1])
 
             with col_center:
 
-                csv = result.to_csv(index=False).encode('utf-8-sig')
+                csv = result.to_csv(
+                    index=False
+                ).encode('utf-8-sig')
 
                 st.download_button(
                     "📥 Download (CSV)",
@@ -187,7 +272,13 @@ if choice == "🔍 Pesquisar":
 
         st.markdown("---")
 
-        config_fixo = {'staticPlot': True}
+        # -------------------------------------------------
+        # CONFIG GRÁFICOS
+        # -------------------------------------------------
+
+        config_fixo = {
+            'staticPlot': True
+        }
 
         paleta_minimalista = [
             '#8EACCD',
@@ -198,25 +289,33 @@ if choice == "🔍 Pesquisar":
             '#E5BA73'
         ]
 
-        # =========================================================
-        # GRÁFICOS
-        # =========================================================
+        # =================================================
+        # PRIMEIRA LINHA DE GRÁFICOS
+        # =================================================
 
         col1, col2 = st.columns(2)
 
-        # ---------------------------------------------------------
-        # GRÁFICO ESTAÇÕES
-        # ---------------------------------------------------------
+        # -------------------------------------------------
+        # ESTAÇÕES DO ANO
+        # -------------------------------------------------
 
         with col1:
 
             c_est = (
                 df["Estações do Ano"]
+                .astype(str)
                 .str.split(',')
                 .explode()
                 .str.strip()
+            )
+
+            c_est = (
+                c_est[c_est != ""]
                 .value_counts()
-                .reset_index()
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Estações do Ano"
+                })
             )
 
             fig1 = px.bar(
@@ -228,12 +327,19 @@ if choice == "🔍 Pesquisar":
             )
 
             # LARGURA DAS COLUNAS
-            fig1.update_traces(width=0.45)
+            fig1.update_traces(
+                width=0.45,
+                textposition='outside'
+            )
 
             fig1.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
-                margin=dict(t=10, b=10)
+                margin=dict(
+                    t=20,
+                    b=10
+                ),
+                height=420
             )
 
             st.plotly_chart(
@@ -242,14 +348,15 @@ if choice == "🔍 Pesquisar":
                 config=config_fixo
             )
 
-        # ---------------------------------------------------------
-        # GRÁFICO NOTAS OLFATIVAS
-        # ---------------------------------------------------------
+        # -------------------------------------------------
+        # NOTAS OLFATIVAS
+        # -------------------------------------------------
 
         with col2:
 
             n_s = (
                 df["Notas Olfativas"]
+                .astype(str)
                 .str.split(',')
                 .explode()
                 .str.strip()
@@ -260,7 +367,15 @@ if choice == "🔍 Pesquisar":
                 n_s[n_s != ""]
                 .value_counts()
                 .nlargest(30)
-                .reset_index()
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Notas Olfativas"
+                })
+            )
+
+            altura_notas = max(
+                400,
+                len(c_not) * 22
             )
 
             fig2 = px.bar(
@@ -273,9 +388,16 @@ if choice == "🔍 Pesquisar":
             )
 
             fig2.update_layout(
-                yaxis={'categoryorder':'total ascending'},
-                height=700,
-                margin=dict(t=10, b=10)
+                yaxis={
+                    'categoryorder': 'total ascending'
+                },
+                height=altura_notas,
+                margin=dict(
+                    t=10,
+                    b=10
+                ),
+                xaxis_title=None,
+                yaxis_title=None
             )
 
             st.plotly_chart(
@@ -284,20 +406,21 @@ if choice == "🔍 Pesquisar":
                 config=config_fixo
             )
 
-        # =========================================================
-        # SEGUNDA LINHA
-        # =========================================================
+        # =================================================
+        # SEGUNDA LINHA DE GRÁFICOS
+        # =================================================
 
         col3, col4 = st.columns(2)
 
-        # ---------------------------------------------------------
+        # -------------------------------------------------
         # FAMÍLIA OLFATIVA
-        # ---------------------------------------------------------
+        # -------------------------------------------------
 
         with col3:
 
             f_s = (
                 df["Família Olfativa"]
+                .astype(str)
                 .str.split('/')
                 .explode()
                 .str.strip()
@@ -308,7 +431,10 @@ if choice == "🔍 Pesquisar":
                 f_s[f_s != ""]
                 .value_counts()
                 .nlargest(6)
-                .reset_index()
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Família Olfativa"
+                })
             )
 
             fig3 = px.pie(
@@ -320,6 +446,7 @@ if choice == "🔍 Pesquisar":
 
             fig3.update_layout(
                 showlegend=True,
+
                 legend=dict(
                     orientation="h",
                     yanchor="top",
@@ -327,7 +454,12 @@ if choice == "🔍 Pesquisar":
                     xanchor="center",
                     x=0.5
                 ),
-                margin=dict(t=10, b=100),
+
+                margin=dict(
+                    t=10,
+                    b=100
+                ),
+
                 height=340
             )
 
@@ -337,9 +469,9 @@ if choice == "🔍 Pesquisar":
                 config=config_fixo
             )
 
-        # ---------------------------------------------------------
+        # -------------------------------------------------
         # PERFUMISTAS
-        # ---------------------------------------------------------
+        # -------------------------------------------------
 
         with col4:
 
@@ -348,7 +480,10 @@ if choice == "🔍 Pesquisar":
                 .replace(["", "nan"], "Desconhecido")
                 .value_counts()
                 .nlargest(15)
-                .reset_index()
+                .reset_index(name="count")
+                .rename(columns={
+                    "index": "Perfumista"
+                })
             )
 
             fig4 = px.bar(
@@ -361,9 +496,19 @@ if choice == "🔍 Pesquisar":
             )
 
             fig4.update_layout(
-                yaxis={'categoryorder':'total ascending'},
+                yaxis={
+                    'categoryorder': 'total ascending'
+                },
+
                 height=450,
-                margin=dict(t=10, b=10)
+
+                margin=dict(
+                    t=10,
+                    b=10
+                ),
+
+                xaxis_title=None,
+                yaxis_title=None
             )
 
             st.plotly_chart(
@@ -386,9 +531,13 @@ elif choice == "➕ Adicionar":
 
         with c1:
 
-            nome = st.text_input("Nome do Perfume *")
+            nome = st.text_input(
+                "Nome do Perfume *"
+            )
 
-            marca = st.text_input("Marca")
+            marca = st.text_input(
+                "Marca"
+            )
 
             est = st.multiselect(
                 "Estações",
@@ -402,13 +551,21 @@ elif choice == "➕ Adicionar":
 
         with c2:
 
-            fam = st.text_input("Família Olfativa")
+            fam = st.text_input(
+                "Família Olfativa"
+            )
 
-            perf = st.text_input("Perfumista")
+            perf = st.text_input(
+                "Perfumista"
+            )
 
-            ano = st.text_input("Ano")
+            ano = st.text_input(
+                "Ano"
+            )
 
-            notas = st.text_area("Notas Olfativas")
+            notas = st.text_area(
+                "Notas Olfativas"
+            )
 
         if st.form_submit_button("Guardar"):
 
@@ -425,7 +582,10 @@ elif choice == "➕ Adicionar":
                     "Perfumista": perf
                 }])
 
-                df = pd.concat([df, new], ignore_index=True)
+                df = pd.concat(
+                    [df, new],
+                    ignore_index=True
+                )
 
                 df.to_csv(
                     DB_FILE,
@@ -449,20 +609,30 @@ elif choice == "📝 Editar":
 
         sel = st.selectbox(
             "Selecione:",
-            sorted(df["Nome do Perfume"].unique().tolist())
+            sorted(
+                df["Nome do Perfume"]
+                .unique()
+                .tolist()
+            )
         )
 
-        idx = df[df["Nome do Perfume"] == sel].index[0]
+        idx = df[
+            df["Nome do Perfume"] == sel
+        ].index[0]
 
         at_oc = [
             x.strip()
-            for x in str(df.at[idx, "Ocasiões de Uso"]).split(",")
+            for x in str(
+                df.at[idx, "Ocasiões de Uso"]
+            ).split(",")
             if x.strip() in OCASIOES_OPCOES
         ]
 
         at_est = [
             x.strip()
-            for x in str(df.at[idx, "Estações do Ano"]).split(",")
+            for x in str(
+                df.at[idx, "Estações do Ano"]
+            ).split(",")
             if x.strip() in ESTACOES_LISTA
         ]
 
@@ -474,12 +644,18 @@ elif choice == "📝 Editar":
 
                 e_n = st.text_input(
                     "Nome",
-                    value=df.at[idx, "Nome do Perfume"]
+                    value=df.at[
+                        idx,
+                        "Nome do Perfume"
+                    ]
                 )
 
                 e_m = st.text_input(
                     "Marca",
-                    value=df.at[idx, "Marca"]
+                    value=df.at[
+                        idx,
+                        "Marca"
+                    ]
                 )
 
                 e_e = st.multiselect(
@@ -498,22 +674,34 @@ elif choice == "📝 Editar":
 
                 e_f = st.text_input(
                     "Família",
-                    value=df.at[idx, "Família Olfativa"]
+                    value=df.at[
+                        idx,
+                        "Família Olfativa"
+                    ]
                 )
 
                 e_p = st.text_input(
                     "Perfumista",
-                    value=df.at[idx, "Perfumista"]
+                    value=df.at[
+                        idx,
+                        "Perfumista"
+                    ]
                 )
 
                 e_a = st.text_input(
                     "Ano",
-                    value=df.at[idx, "Ano"]
+                    value=df.at[
+                        idx,
+                        "Ano"
+                    ]
                 )
 
                 e_not = st.text_area(
                     "Notas",
-                    value=df.at[idx, "Notas Olfativas"]
+                    value=df.at[
+                        idx,
+                        "Notas Olfativas"
+                    ]
                 )
 
             if st.form_submit_button("Atualizar"):
@@ -551,12 +739,18 @@ elif choice == "🗑️ Apagar":
 
         p_del = st.selectbox(
             "Perfume:",
-            sorted(df["Nome do Perfume"].unique().tolist())
+            sorted(
+                df["Nome do Perfume"]
+                .unique()
+                .tolist()
+            )
         )
 
         if st.button("Confirmar"):
 
-            df = df[df["Nome do Perfume"] != p_del]
+            df = df[
+                df["Nome do Perfume"] != p_del
+            ]
 
             df.to_csv(
                 DB_FILE,
