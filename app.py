@@ -103,7 +103,7 @@ if choice == "🔍 Pesquisar":
                 st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 
 st.markdown("---")
-config_fixo = {'staticPlot': True}
+ config_fixo = {'staticPlot': True}
 
         # PALETA ANTERIOR RESTAURADA
         paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
