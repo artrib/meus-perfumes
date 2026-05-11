@@ -4,32 +4,25 @@ import os
 import unicodedata
 import plotly.express as px
 
-# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO (RESTAURADO)
+# 1. CONFIGURAÇÃO DE LAYOUT E ESTILO
 st.set_page_config(page_title="Gestão de Perfumes", layout="wide", page_icon="👃")
 
 st.markdown("""
     <style>
-    /* Ajuste do topo para não cortar o título e manter menu acessível */
     .block-container {
         padding-top: 2.5rem !important;
         padding-bottom: 1rem !important;
     }
-    
-    /* REMOVER CONTORNO VERMELHO EM TODO O APP */
     *:focus, [data-baseweb="input"] > div:focus-within, [data-testid="stDataEditor"] *:focus {
         outline: none !important;
         border-color: #dcdcdc !important;
         box-shadow: none !important;
     }
-    
-    /* Menu Lateral (Estilo Anterior) */
     [data-testid="stSidebar"] .stRadio label p {
         font-size: 24px !important;
         font-weight: 800 !important;
         color: #4F709C !important;
     }
-    
-    /* Centralização Real do Botão */
     .centered-btn {
         display: flex;
         justify-content: center;
@@ -66,8 +59,7 @@ menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
 choice = st.sidebar.radio("MENU DE GESTÃO", menu)
 
 if choice == "🔍 Pesquisar":
-    search = st.text_input("", placeholder="Pesquisar... (Ex: 'Dio Fah')")
-    
+    search = st.text_input("", placeholder="Pesquisar...")
     result = df.copy()
     if search:
         termos = search.split()
@@ -77,27 +69,17 @@ if choice == "🔍 Pesquisar":
             result = result[mask]
     
     st.write(f"Total: {len(result)} Perfumes")
-    
     if not df.empty:
         st.data_editor(result.reset_index(drop=True), use_container_width=True, hide_index=True, disabled=True)
         
-        if not result.empty:
-            _, col_center, _ = st.columns([1, 2, 1])
-            with col_center:
-                csv = result.to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Descarregar resultados (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
-
         st.markdown("---")
         config_fixo = {'staticPlot': True}
-        paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
-        
         col1, col2 = st.columns(2)
         with col1:
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip().value_counts().reset_index()
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=10, b=10))
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
-        
         with col2:
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip().str.capitalize()
             c_not = n_s[n_s != ""].value_counts().nlargest(30).reset_index()
@@ -112,4 +94,55 @@ elif choice == "➕ Adicionar":
         with c1:
             nome = st.text_input("Nome do Perfume *")
             marca = st.text_input("Marca")
-            # Alter
+            # DINAMICA ALTERADA: multiselect para permitir várias opções
+            est = st.multiselect("Estações", ESTACOES_LISTA)
+            oc = st.multiselect("Ocasiões de Uso", OCASIOES_OPCOES)
+        with c2:
+            fam = st.text_input("Família Olfativa")
+            perf = st.text_input("Perfumista")
+            ano = st.text_input("Ano")
+            notas = st.text_area("Notas Olfativas")
+        if st.form_submit_button("Guardar"):
+            if nome:
+                new = pd.DataFrame([{"Ano": ano, "Nome do Perfume": nome, "Estações do Ano": ", ".join(est), "Ocasiões de Uso": ", ".join(oc), "Família Olfativa": fam, "Notas Olfativas": notas, "Marca": marca, "Perfumista": perf}])
+                df = pd.concat([df, new], ignore_index=True)
+                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                st.success("Guardado!"); st.rerun()
+
+elif choice == "📝 Editar":
+    st.subheader("Editar")
+    if not df.empty:
+        sel = st.selectbox("Selecione:", sorted(df["Nome do Perfume"].unique().tolist()))
+        idx = df[df["Nome do Perfume"] == sel].index[0]
+        
+        # Preparação das listas existentes para o multiselect
+        at_oc = [x.strip() for x in str(df.at[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
+        at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
+        
+        with st.form("edit"):
+            c1, c2 = st.columns(2)
+            with c1:
+                e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
+                e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
+                # DINAMICA ALTERADA: multiselect com valores por defeito
+                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
+                e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
+            with c2:
+                e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
+                e_p = st.text_input("Perfumista", value=df.at[idx, "Perfumista"])
+                e_a = st.text_input("Ano", value=df.at[idx, "Ano"])
+                e_not = st.text_area("Notas", value=df.at[idx, "Notas Olfativas"])
+            if st.form_submit_button("Atualizar"):
+                # Guarda as seleções unindo-as com vírgulas
+                df.loc[idx] = [e_a, e_n, ", ".join(e_e), ", ".join(e_oc), e_f, e_not, e_m, e_p]
+                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                st.success("Atualizado!"); st.rerun()
+
+elif choice == "🗑️ Apagar":
+    st.subheader("Eliminar")
+    if not df.empty:
+        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
+        if st.button("Confirmar"):
+            df = df[df["Nome do Perfume"] != p_del]
+            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+            st.warning("Eliminado."); st.rerun()
