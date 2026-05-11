@@ -72,7 +72,7 @@ if choice == "🔍 Pesquisar":
             hide_index=True, 
             disabled=True,
             column_config={
-                "Ano": st.column_config.TextColumn("Ano", width="small"),
+                "Ano": st.column_config.TextColumn("Ano", width=50),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="large"),
                 "Marca": st.column_config.TextColumn("Marca", width="medium"),
                 "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=450), 
