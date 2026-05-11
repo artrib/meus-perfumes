@@ -233,47 +233,30 @@ if choice == "🔍 Pesquisar":
             )
 
             fig2.update_layout(
-                yaxis={'categoryorder': 'total ascending'},
-                height=770, # Ajustado para alinhar com os dois gráficos da esquerda
+yaxis={'categoryorder': 'total ascending'},
+                height=770, 
                 margin=dict(t=10, b=10),
                 xaxis_title=None, yaxis_title=None
             )
-
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
         # =================================================
         # SEGUNDA LINHA DE GRÁFICOS
         # =================================================
-
         col3, col4 = st.columns(2)
-
-        # -------------------------------------------------
-        # FAMÍLIA OLFATIVA
-        # -------------------------------------------------
 
         with col3:
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
 
-            fig3 = px.pie(
-                c_fam,
-                values='count',
-                names='Família Olfativa',
-                color_discrete_sequence=paleta_minimalista
-            )
-
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
             fig3.update_layout(
                 showlegend=True,
                 legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
                 margin=dict(t=10, b=100), height=340
             )
-
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
-
-        # -------------------------------------------------
-        # PERFUMISTAS
-        # -------------------------------------------------
 
         with col4:
             c_perf = df["Perfumista"].replace(["", "nan"], "Desconhecido")
@@ -281,50 +264,28 @@ if choice == "🔍 Pesquisar":
             c_perf = c_perf.value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
 
-            fig4 = px.bar(
-                c_perf,
-                x="count",
-                y="Perfumista",
-                orientation='h',
-                text="count",
-                color_discrete_sequence=['#94A684']
-            )
-
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig4.update_layout(
                 yaxis={'categoryorder': 'total ascending'},
-                height=450,
-                margin=dict(t=10, b=10),
+                height=450, margin=dict(t=10, b=10),
                 xaxis_title=None, yaxis_title=None
             )
-
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
         # =================================================
         # LINHA FINAL: MARCAS
         # =================================================
-        
         st.markdown("---")
         st.subheader("Distribuição por Marcas")
         
-        c_marca = df["Marca"].replace(["", "nan"], "N/A")
-        c_marca = c_marca.apply(padronizar_texto).value_counts().nlargest(20).reset_index(name="count")
+        c_marca = df["Marca"].replace(["", "nan"], "N/A").apply(padronizar_texto).value_counts().nlargest(20).reset_index(name="count")
         c_marca.columns = ["Marca", "count"]
 
-        fig_marca = px.bar(
-            c_marca,
-            x="Marca",
-            y="count",
-            text="count",
-            color_discrete_sequence=['#607274']
-        )
-
+        fig_marca = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig_marca.update_traces(textposition='outside')
-        fig_marca.update_layout(
-            xaxis_title=None, yaxis_title=None,
-            margin=dict(t=20, b=10), height=400
-        )
+        fig_marca.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
         st.plotly_chart(fig_marca, use_container_width=True, config=config_fixo)
-
+        
 # =========================================================
 # ADICIONAR / EDITAR / APAGAR (Lógica permanece igual à anterior)
 # =========================================================
