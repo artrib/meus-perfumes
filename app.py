@@ -15,13 +15,6 @@ st.markdown("""
         padding-bottom: 1rem !important;
     }
     
-    /* REMOVER CONTORNO VERMELHO EM TODO O APP */
-    *:focus, [data-baseweb="input"] > div:focus-within, [data-testid="stDataEditor"] *:focus {
-        outline: none !important;
-        border-color: #dcdcdc !important;
-        box-shadow: none !important;
-    }
-    
     /* Menu Lateral (Estilo Anterior) */
     [data-testid="stSidebar"] .stRadio label p {
         font-size: 24px !important;
