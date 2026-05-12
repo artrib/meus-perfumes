@@ -58,7 +58,7 @@ ESTACOES_LISTA = [
 
 OCASIOES_OPCOES = [
     "CASUAL DIA", "CASUAL NOITE", "TRABALHO PRI/VER", 
-    "TRABALHO OUT/INV", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL"
+    "TRABALHO OUT/INV", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
 ]
 
 # =========================================================
