@@ -136,15 +136,17 @@ if choice == "🔍 Pesquisar":
         for termo in termos:
             t_norm = remover_acentos(termo)
             
+            # Criamos um padrão que procura a palavra exata (isolada por espaços ou vírgulas)
+            # \b garante que "Rosa" não coincida com "Pimenta Rosa" ou "Rosário"
+            padrao_exato = rf'\b{t_norm}\b'
+            
             if local_busca == "Tudo":
-                # Lógica original: pesquisa em todas as colunas
                 mask = result.apply(
-                    lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
+                    lambda row: row.astype(str).map(remover_acentos).str.contains(padrao_exato, regex=True).any(), 
                     axis=1
                 )
             else:
-                # Lógica específica: pesquisa apenas na coluna selecionada
-                mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
+                mask = result[local_busca].astype(str).map(remover_acentos).str.contains(padrao_exato, regex=True)
             
             result = result[mask].copy()
 
