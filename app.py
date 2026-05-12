@@ -141,8 +141,19 @@ if choice == "🔍 Pesquisar":
         termos = search.split()
         for termo in termos:
             t_norm = remover_acentos(termo)
+            t_padronizado = padronizar_texto(termo)
             
-            if local_busca == "Tudo":
+            if local_busca == "Notas Olfativas":
+                # Lógica de correspondência exata para cada nota individual na lista
+                def match_exact_note(cell_value):
+                    if not cell_value: return False
+                    # Divide as notas existentes e limpa espaços (a padronização já existe no banco)
+                    notas_no_banco = [n.strip() for n in str(cell_value).split(",")]
+                    return t_padronizado in notas_no_banco
+                
+                mask = result["Notas Olfativas"].apply(match_exact_note)
+                
+            elif local_busca == "Tudo":
                 mask = result.apply(
                     lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
                     axis=1
