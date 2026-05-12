@@ -96,7 +96,7 @@ if choice == "🔍 Pesquisar":
     with col_busca:
         search = st.text_input("pesquisa", placeholder="...")
     with col_filtro:
-        opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", 'Ocasiões de Uso", "Estações do Ano", "Perfumista", "Marca", "Nome do Perfume"]
+        opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Ocasiões de Uso", "Estações do Ano", "Perfumista", "Marca", "Nome do Perfume"]
         local_busca = st.selectbox("filtros", opcoes_busca)
 
     result = df.copy()
