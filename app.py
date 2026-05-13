@@ -125,7 +125,7 @@ if choice == "🔍 Pesquisar":
     col_busca, col_filtro = st.columns([3, 1])
     
     with col_busca:
-        search = st.text_input("pesquisa", placeholder="...")
+        search = st.text_input("pesquisa", placeholder="🔍")
     
     with col_filtro:
         opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Estações do Ano", "Ocasiões de Uso", "Perfumista", "Marca", "Nome do Perfume"]
