@@ -238,7 +238,7 @@ if choice == "🔍 Pesquisar":
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
                 margin=dict(t=10, b=50, l=10, r=10), 
-                height=350 
+                height=300 
             )
             # Coluna centralizada para o gráfico
             col_left, col_donut, col_right = st.columns([1, 2, 1])
