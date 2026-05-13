@@ -216,11 +216,12 @@ if choice == "🔍 Pesquisar":
 
             # MAPA DE CALOR DIA/NOITE
             h_df = df.copy()
-            h_df["Estações do Ano"] = h_df["Estações do Ano"].str.split(',')
-            h_df["Ocasiões de Uso"] = h_df["Ocasiões de Uso"].str.split(',')
+            h_df["Estações do Ano"] = h_df["Estações do Ano"].astype(str).str.split(',')
+            h_df["Ocasiões de Uso"] = h_df["Ocasiões de Uso"].astype(str).str.split(',')
             h_df = h_df.explode("Estações do Ano").explode("Ocasiões de Uso")
-            h_df["Estação"] = h_df["Estações do Ano"].str.strip().apply(padronizar_texto)
-            h_df["Oc_Limpa"] = h_df["Ocasiões de Uso"].astype(str).str.strip().upper()
+            
+            h_df["Estação"] = h_df["Estações do Ano"].astype(str).str.strip().apply(padronizar_texto)
+            h_df["Oc_Limpa"] = h_df["Ocasiões de Uso"].astype(str).str.strip().str.upper()
             
             map_p = {
                 "CASUAL DIA": "DIA", "TRABALHO PRI/VER": "DIA", "TRABALHO OUT/INV": "DIA", "FORMAL DIA": "DIA",
@@ -234,13 +235,16 @@ if choice == "🔍 Pesquisar":
                 h_pv = h_df.groupby(["Período", "Estação"]).size().unstack(fill_value=0)
                 e_ordem = [padronizar_texto(e) for e in ESTACOES_LISTA if padronizar_texto(e) in h_pv.columns]
                 h_pv = h_pv.reindex(columns=e_ordem)
+                # Garante ordem DIA -> NOITE no eixo Y
+                p_ordem = [p for p in ["DIA", "NOITE"] if p in h_pv.index]
+                h_pv = h_pv.reindex(index=p_ordem)
                 
                 fig_h = px.imshow(h_pv, text_auto=True, color_continuous_scale=[[0, '#fdfbf7'], [1, '#8EACCD']])
                 fig_h.update_layout(height=180, margin=dict(t=30, b=10, l=5, r=5), xaxis_title=None, yaxis_title=None, coloraxis_showscale=False)
                 st.plotly_chart(fig_h, use_container_width=True, config=config_fixo)
 
         with col2:
-            # GRÁFICO 2: NOTAS (Ajustado para alinhar verticalmente)
+            # GRÁFICO 2: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
@@ -261,97 +265,5 @@ if choice == "🔍 Pesquisar":
         with col4:
             # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
-            c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
-            c_perf.columns = ["Perfumista", "count"]
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
-            fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
-            st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
-
-        st.markdown("---")
-        c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
-        c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
-        c_marca.columns = ["Marca", "count"]
-        fig6 = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
-        fig6.update_traces(width=0.6, textposition='outside')
-        fig6.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
-        st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
-
-# =========================================================
-# ADICIONAR / EDITAR / APAGAR
-# =========================================================
-
-elif choice == "➕ Adicionar":
-    st.subheader("Novo Registo")
-    with st.form("add"):
-        c1, c2 = st.columns(2)
-        with c1:
-            nome = st.text_input("Nome do Perfume *")
-            marca = st.text_input("Marca")
-            est = st.multiselect("Estações", ESTACOES_LISTA)
-            oc = st.multiselect("Ocasiões de Uso", OCASIOES_OPCOES)
-        with c2:
-            fam = st.text_input("Família Olfativa")
-            perf = st.text_input("Perfumista")
-            ano = st.text_input("Ano")
-            notas = st.text_area("Notas Olfativas")
-
-        if st.form_submit_button("Guardar"):
-            if nome:
-                fam_clean = ", ".join([padronizar_texto(f) for f in fam.replace('/', ',').split(',') if f.strip()])
-                notas_clean = ", ".join([padronizar_texto(n) for n in notas.split(',') if n.strip()])
-                perf_clean = padronizar_texto(perf)
-                new = pd.DataFrame([{
-                    "Ano": ano, "Nome do Perfume": nome, "Estações do Ano": ", ".join(est),
-                    "Ocasiões de Uso": ", ".join(oc), "Família Olfativa": fam_clean,
-                    "Notas Olfativas": notas_clean, "Marca": marca, "Perfumista": perf_clean
-                }])
-                df = pd.concat([df, new], ignore_index=True)
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Guardado!")
-                st.rerun()
-
-elif choice == "📝 Editar":
-    st.subheader("Editar")
-    if not df.empty:
-        lista_perfumes = sorted(df["Nome do Perfume"].unique().tolist())
-        idx_default = 0
-        if st.session_state.edit_perfume in lista_perfumes:
-            idx_default = lista_perfumes.index(st.session_state.edit_perfume)
-        
-        sel = st.selectbox("Selecione:", lista_perfumes, index=idx_default)
-        idx = df[df["Nome do Perfume"] == sel].index[0]
-        at_oc = [x.strip() for x in str(df.at[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
-        at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
-
-        with st.form("edit"):
-            c1, c2 = st.columns(2)
-            with c1:
-                e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
-                e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
-                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
-                e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
-            with c2:
-                e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
-                e_p = st.text_input("Perfumista", value=df.at[idx, "Perfumista"])
-                e_a = st.text_input("Ano", value=df.at[idx, "Ano"])
-                e_not = st.text_area("Notas", value=df.at[idx, "Notas Olfativas"])
-
-            if st.form_submit_button("Atualizar"):
-                fam_edit = ", ".join([padronizar_texto(f) for f in e_f.replace('/', ',').split(',') if f.strip()])
-                notas_edit = ", ".join([padronizar_texto(n) for n in e_not.split(',') if n.strip()])
-                df.loc[idx] = [e_a, e_n, ", ".join(e_e), ", ".join(e_oc), fam_edit, notas_edit, e_m, padronizar_texto(e_p)]
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.session_state.edit_perfume = None
-                st.success("Atualizado!")
-                st.rerun()
-
-elif choice == "🗑️ Apagar":
-    st.subheader("Eliminar")
-    if not df.empty:
-        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("Confirmar"):
-            df = df[df["Nome do Perfume"] != p_del]
-            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.warning("Eliminado.")
-            st.rerun()
-    
+            c_perf = c_perf.apply(padronizar_texto).value
+                
