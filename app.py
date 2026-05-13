@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # =========================================================
-# GESTÃO DE ESTADO (Para Edição Direta)
+# GESTÃO DE ESTADO
 # =========================================================
 if "edit_perfume" not in st.session_state:
     st.session_state.edit_perfume = None
@@ -92,11 +92,8 @@ def load_data():
             for col in cols:
                 if col not in df.columns:
                     df[col] = ""
-            
-            # --- CORREÇÃO DO ANO ---
             df["Ano"] = pd.to_numeric(df["Ano"], errors='coerce')
             df["Ano"] = df["Ano"].apply(lambda x: str(int(x)) if pd.notnull(x) else "")
-            
             return df.fillna("").astype(str)[cols]
         except Exception as e:
             st.error(f"Erro ao carregar CSV: {e}")
@@ -204,54 +201,55 @@ if choice == "🔍 Pesquisar":
             c_est.columns = ["Estações do Ano", "count"]
             fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
+            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=20), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
             # GRÁFICO 5: OCASIÕES DE USO
-            c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
-            c_oc_counts = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts()
+            c_oc_all = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
+            c_oc_counts = c_oc_all[c_oc_all != ""].apply(lambda x: x.upper()).value_counts()
             c_oc_df = c_oc_counts.reset_index(name="count")
             c_oc_df.columns = ["Ocasiões", "count"]
             fig5 = px.bar(c_oc_df, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'])
             fig5.update_traces(width=0.45, textposition='outside')
-            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
+            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=30, b=20), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # GRÁFICO ARANHA: DIA vs NOITE
+            # GRÁFICO ARANHA: DIA vs NOITE (Agrupado)
             dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
             noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
             
-            val_dia = c_oc_counts.reindex(dia_tags).sum()
-            val_noite = c_oc_counts.reindex(noite_tags).sum()
+            val_dia = c_oc_counts.reindex(dia_tags).fillna(0).sum()
+            val_noite = c_oc_counts.reindex(noite_tags).fillna(0).sum()
 
             fig_radar = go.Figure()
             fig_radar.add_trace(go.Scatterpolar(
-                r=[val_dia, val_noite, val_dia],
+                r=[val_dia, val_noite, val_dia], # Fecha o triângulo
                 theta=['DIA', 'NOITE', 'DIA'],
                 fill='toself',
-                line_color='#C08261',
-                marker=dict(color='#C08261'),
-                fillcolor='rgba(192, 130, 97, 0.2)'
+                line_color='#607274',
+                marker=dict(color='#607274'),
+                fillcolor='rgba(96, 114, 116, 0.3)'
             ))
             fig_radar.update_layout(
                 polar=dict(
-                    radialaxis=dict(visible=True, showticklabels=False, gridcolor="#eeeeee"),
-                    angularaxis=dict(gridcolor="#eeeeee")
+                    bgcolor='#F0F2F6', # Fundo Cinzento
+                    radialaxis=dict(visible=True, showticklabels=False, gridcolor="#dcdcdc"),
+                    angularaxis=dict(gridcolor="#dcdcdc")
                 ),
+                paper_bgcolor='rgba(0,0,0,0)',
                 showlegend=False,
-                height=350,
-                margin=dict(t=40, b=40, l=40, r=40)
+                height=300, # Gráfico um pouco menor
+                margin=dict(t=40, b=40, l=60, r=60)
             )
             st.plotly_chart(fig_radar, use_container_width=True, config=config_fixo)
 
         with col2:
-            # GRÁFICO 2: NOTAS
+            # GRÁFICO 2: NOTAS (Altura ajustada para equilibrar com a esquerda)
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            # Ajuste de altura para equilibrar com a coluna da esquerda (agora com 3 gráficos)
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
-            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=1100, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
+            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=1000, margin=dict(t=30, b=20), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
         col3, col4 = st.columns(2)
@@ -265,7 +263,7 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
-            # GRÁFICO 4: PERFUMISTAS (Sem "Desconhecido")
+            # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
@@ -273,7 +271,6 @@ if choice == "🔍 Pesquisar":
             fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
-        # GRÁFICO 6: MARCAS (Final da página)
         st.markdown("---")
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
         c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
@@ -284,7 +281,7 @@ if choice == "🔍 Pesquisar":
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
 # =========================================================
-# ADICIONAR / EDITAR / APAGAR
+# ADICIONAR / EDITAR / APAGAR (LOGICA SEM ALTERAÇÃO)
 # =========================================================
 
 elif choice == "➕ Adicionar":
@@ -361,3 +358,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
+        
