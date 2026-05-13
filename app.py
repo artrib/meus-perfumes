@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import unicodedata
 import plotly.express as px
+import plotly.graph_objects as go
 
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
@@ -206,23 +207,51 @@ if choice == "🔍 Pesquisar":
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-            # GRÁFICO 5: OCASIÕES DE USO (Abaixo das Estações)
+            # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
-            c_oc = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts().reset_index(name="count")
-            c_oc.columns = ["Ocasiões", "count"]
-            fig5 = px.bar(c_oc, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'])
+            c_oc_counts = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts()
+            c_oc_df = c_oc_counts.reset_index(name="count")
+            c_oc_df.columns = ["Ocasiões", "count"]
+            fig5 = px.bar(c_oc_df, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'])
             fig5.update_traces(width=0.45, textposition='outside')
             fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
+
+            # GRÁFICO ARANHA: DIA vs NOITE
+            dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
+            noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
+            
+            val_dia = c_oc_counts.reindex(dia_tags).sum()
+            val_noite = c_oc_counts.reindex(noite_tags).sum()
+
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=[val_dia, val_noite, val_dia],
+                theta=['DIA', 'NOITE', 'DIA'],
+                fill='toself',
+                line_color='#C08261',
+                marker=dict(color='#C08261'),
+                fillcolor='rgba(192, 130, 97, 0.2)'
+            ))
+            fig_radar.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, showticklabels=False, gridcolor="#eeeeee"),
+                    angularaxis=dict(gridcolor="#eeeeee")
+                ),
+                showlegend=False,
+                height=350,
+                margin=dict(t=40, b=40, l=40, r=40)
+            )
+            st.plotly_chart(fig_radar, use_container_width=True, config=config_fixo)
 
         with col2:
             # GRÁFICO 2: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            # Ajuste dinâmico de altura para alinhar com os dois gráficos da esquerda
+            # Ajuste de altura para equilibrar com a coluna da esquerda (agora com 3 gráficos)
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
-            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
+            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=1100, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
         col3, col4 = st.columns(2)
@@ -255,7 +284,7 @@ if choice == "🔍 Pesquisar":
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
 # =========================================================
-# ADICIONAR / EDITAR / APAGAR (Código permanece igual)
+# ADICIONAR / EDITAR / APAGAR
 # =========================================================
 
 elif choice == "➕ Adicionar":
