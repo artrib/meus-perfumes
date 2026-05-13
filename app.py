@@ -206,7 +206,7 @@ if choice == "🔍 Pesquisar":
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-            # GRÁFICO 5: OCASIÕES DE USO (Abaixo das Estações)
+            # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
@@ -215,14 +215,51 @@ if choice == "🔍 Pesquisar":
             fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
+            # MAPA DE CALOR: DIA e NOITE vs ESTAÇÕES
+            h_df = df.copy()
+            h_df["Estações do Ano"] = h_df["Estações do Ano"].str.split(',')
+            h_df["Ocasiões de Uso"] = h_df["Ocasiões de Uso"].str.split(',')
+            h_df = h_df.explode("Estações do Ano").explode("Ocasiões de Uso")
+            h_df["Estações do Ano"] = h_df["Estações do Ano"].str.strip().apply(padronizar_texto)
+            h_df["Ocasião"] = h_df["Ocasiões de Uso"].str.strip().upper()
+            
+            # Mapeamento solicitado
+            mapa_per = {
+                "CASUAL DIA": "DIA", "TRABALHO PRI/VER": "DIA", "TRABALHO OUT/INV": "DIA", "FORMAL DIA": "DIA",
+                "CASUAL NOITE": "NOITE", "FORMAL NOITE": "NOITE"
+            }
+            h_df["Período"] = h_df["Ocasião"].map(mapa_per)
+            h_df = h_df.dropna(subset=["Período"])
+            h_df = h_df[h_df["Estações do Ano"] != ""]
+            
+            if not h_df.empty:
+                h_pivot = h_df.groupby(["Período", "Estações do Ano"]).size().unstack(fill_value=0)
+                # Ordenar colunas conforme a lista mestre de estações
+                cols_ordem = [padronizar_texto(e) for e in ESTACOES_LISTA if padronizar_texto(e) in h_pivot.columns]
+                h_pivot = h_pivot.reindex(columns=cols_ordem)
+                
+                fig_h = px.imshow(
+                    h_pivot, 
+                    text_auto=True, 
+                    color_continuous_scale=[[0, '#fdfbf7'], [1, '#8EACCD']], 
+                    aspect="auto"
+                )
+                fig_h.update_layout(
+                    margin=dict(t=30, b=10), 
+                    height=200, 
+                    xaxis_title=None, 
+                    yaxis_title=None, 
+                    coloraxis_showscale=False
+                )
+                st.plotly_chart(fig_h, use_container_width=True, config=config_fixo)
+
         with col2:
             # GRÁFICO 2: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            # Ajuste dinâmico de altura para alinhar com os dois gráficos da esquerda
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
-            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
+            fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=940, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
         col3, col4 = st.columns(2)
@@ -236,7 +273,7 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
-            # GRÁFICO 4: PERFUMISTAS (Sem "Desconhecido")
+            # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
@@ -244,7 +281,7 @@ if choice == "🔍 Pesquisar":
             fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
-        # GRÁFICO 6: MARCAS (Final da página)
+        # GRÁFICO 6: MARCAS
         st.markdown("---")
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
         c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
@@ -255,7 +292,7 @@ if choice == "🔍 Pesquisar":
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
 # =========================================================
-# ADICIONAR / EDITAR / APAGAR (Código permanece igual)
+# ADICIONAR / EDITAR / APAGAR
 # =========================================================
 
 elif choice == "➕ Adicionar":
@@ -332,3 +369,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
+                                                             
