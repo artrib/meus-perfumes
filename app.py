@@ -358,4 +358,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
-        
+    
