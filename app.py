@@ -81,25 +81,20 @@ def padronizar_texto(texto):
         texto_limpo = texto_limpo[:-1]
     return texto_limpo.capitalize()
 
-def load_data()
+def load_data():
     cols = ["Ano", "Nome do Perfume", "Estações do Ano", "Ocasiões de Uso", 
             "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
             df.columns = df.columns.str.strip()
-            
-            # Garante que as colunas existem
             for col in cols:
                 if col not in df.columns:
                     df[col] = ""
             
             # --- CORREÇÃO DO ANO ---
-            # Converte para numérico, transformando erros (vazio) em NaN
             df["Ano"] = pd.to_numeric(df["Ano"], errors='coerce')
-            # Converte para string, remove o ".0" e substitui NaNs por string vazia
             df["Ano"] = df["Ano"].apply(lambda x: str(int(x)) if pd.notnull(x) else "")
-            # -----------------------
             
             return df.fillna("").astype(str)[cols]
         except Exception as e:
