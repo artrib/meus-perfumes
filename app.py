@@ -115,7 +115,6 @@ st.markdown("<h2 style='text-align:left; font-size:37px;'>Caixa dos Perfumes</h2
 # =========================================================
 
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📝 Editar", "🗑️ Apagar"]
-# Altera a aba ativa se houver um perfume selecionado para edição
 default_index = 2 if st.session_state.edit_perfume else 0
 choice = st.sidebar.radio("MENU DE GESTÃO", menu, index=default_index)
 
@@ -138,19 +137,14 @@ if choice == "🔍 Pesquisar":
 
     if search:
         if local_busca == "Notas Olfativas":
-            # Tratamos a pesquisa como termo único para permitir notas compostas (ex: Rosa Bulgara)
             t_padronizado = padronizar_texto(search)
-            
             def match_exact_note(cell_value):
                 if not cell_value: return False
-                # Padronizamos as notas do banco durante a comparação para garantir consistência
                 notas_no_banco = [padronizar_texto(n) for n in str(cell_value).split(",")]
                 return t_padronizado in notas_no_banco
-            
             mask = result["Notas Olfativas"].apply(match_exact_note)
             result = result[mask].copy()
         else:
-            # Para outros filtros, mantemos a pesquisa por múltiplos termos
             termos = search.split()
             for termo in termos:
                 t_norm = remover_acentos(termo)
@@ -226,10 +220,11 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
-            c_perf = df["Perfumista"].replace(["", "nan"], "Desconhecido")
-            c_perf = c_perf.apply(lambda x: padronizar_texto(x) if x != "Desconhecido" else x)
-            c_perf = c_perf.value_counts().nlargest(15).reset_index(name="count")
+            # FILTRO: Apenas perfumistas onde o texto não está vazio ou apenas com espaços
+            c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
+            c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
+            
             fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
