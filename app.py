@@ -86,8 +86,13 @@ def load_data():
             "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
     if os.path.exists(DB_FILE):
         try:
-            df = pd.read_csv(DB_FILE, encoding='utf-8-sig')
+            # O 'sep=None' faz o pandas detectar se é vírgula ou ponto e vírgula
+            # O 'engine=python' é necessário para usar a detecção automática
+            df = pd.read_csv(DB_FILE, encoding='utf-8-sig', sep=None, engine='python')
+            
             df.columns = df.columns.str.strip()
+            
+            # Garante que todas as colunas necessárias existam
             for col in cols:
                 if col not in df.columns:
                     df[col] = ""
