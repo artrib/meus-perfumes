@@ -206,7 +206,6 @@ if choice == "🔍 Pesquisar":
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-            st.markdown("<br><br>", unsafe_allow_html=True)
             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts().reset_index(name="count")
@@ -216,29 +215,25 @@ if choice == "🔍 Pesquisar":
             fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            # NOVO GRÁFICO: DIA E NOITE (CENTRALIZADO)
-            _, col_pie, _ = st.columns([1, 4, 1])
-            with col_pie:
-                def classificar_periodo(row):
-                    oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
-                    dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
-                    noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
-                    if any(tag in oc for tag in dia_tags): return "DIA"
-                    if any(tag in oc for tag in noite_tags): return "NOITE"
-                    return "OUTROS"
-
-                df_temp = df.copy()
-                df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
-                df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
-                df_pie.columns = ["Periodo", "count"]
+            # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+            st.markdown("<br>", unsafe_allow_html=True)
+            def classificar_periodo(row):
+                oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
+                dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
+                noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
                 
-                fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.6, 
-                                color_discrete_map={'DIA': '#FFFDE7', 'NOITE': '#2C3333'})
-                fig_yn.update_traces(marker=dict(line=dict(color='#FFFFFF', width=2)))
-                fig_yn.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=250,
-                                     annotations=[dict(text='DIA/<br>NOITE', x=0.5, y=0.5, font_size=15, showarrow=False)])
-                st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
+                if any(tag in oc for tag in dia_tags): return "DIA"
+                if any(tag in oc for tag in noite_tags): return "NOITE"
+                return "OUTROS"
+
+            df_temp = df.copy()
+            df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
+            df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
+            df_pie.columns = ["Periodo", "count"]
+            
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#4F709C', '#2C3333'])
+            fig_yn.update_layout(showlegend=True, margin=dict(t=10, b=10), height=300)
+            st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
 
         with col2:
             # GRÁFICO 2: NOTAS
@@ -249,25 +244,24 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            col3, col4 = st.columns(2)
-            with col3:
-                # GRÁFICO 3: FAMÍLIA
-                f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
-                c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
-                c_fam.columns = ["Família Olfativa", "count"]
-                fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-                fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
-                st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
+        col3, col4 = st.columns(2)
+        with col3:
+            # GRÁFICO 3: FAMÍLIA
+            f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
+            c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
+            c_fam.columns = ["Família Olfativa", "count"]
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
+            st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
-            with col4:
-                # GRÁFICO 4: PERFUMISTAS
-                c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
-                c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
-                c_perf.columns = ["Perfumista", "count"]
-                fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
-                fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
-                st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
+        with col4:
+            # GRÁFICO 4: PERFUMISTAS
+            c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
+            c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
+            c_perf.columns = ["Perfumista", "count"]
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
+            fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
+            st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
         # GRÁFICO 6: MARCAS
         st.markdown("---")
@@ -357,4 +351,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
-            
+        
