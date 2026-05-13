@@ -232,7 +232,7 @@ if choice == "🔍 Pesquisar":
             df_pie.columns = ["Periodo", "count"]
             
             # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#fcf7f5', '#7f8282'])
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#faf1e8', '#7f8282'])
             # Centralização via legenda abaixo e redução de tamanho
             fig_yn.update_layout(
                 showlegend=True, 
