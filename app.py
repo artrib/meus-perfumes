@@ -231,9 +231,19 @@ if choice == "🔍 Pesquisar":
             df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
             df_pie.columns = ["Periodo", "count"]
             
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#4F709C', '#2C3333'])
-            fig_yn.update_layout(showlegend=True, margin=dict(t=10, b=10), height=300)
-            st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
+            # Ajuste de cores e tamanho
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#FFFACD', '#2C3333'])
+            # Centralização via legenda abaixo e redução de tamanho
+            fig_yn.update_layout(
+                showlegend=True, 
+                legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
+                margin=dict(t=10, b=50, l=10, r=10), 
+                height=250 
+            )
+            # Coluna centralizada para o gráfico
+            col_left, col_donut, col_right = st.columns([1, 2, 1])
+            with col_donut:
+                st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
 
         with col2:
             # GRÁFICO 2: NOTAS
@@ -244,6 +254,8 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
+        # Espaçamento aumentado
+        st.markdown("<br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
             # GRÁFICO 3: FAMÍLIA
@@ -351,4 +363,4 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
-        
+            
