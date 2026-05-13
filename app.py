@@ -215,7 +215,7 @@ if choice == "🔍 Pesquisar":
             fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+            # NOVO GRÁFICO: DIA E NOITE (Pizza)
             st.markdown("<br>", unsafe_allow_html=True)
             def classificar_periodo(row):
                 oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
@@ -231,18 +231,17 @@ if choice == "🔍 Pesquisar":
             df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
             df_pie.columns = ["Periodo", "count"]
             
-            # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#FFFACD', '#2C3333'])
-            # Centralização via legenda abaixo e redução de tamanho
+            # Gráfico de Pizza (sem hole=0.5), cores ajustadas, centralizado
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', color_discrete_sequence=['#FFFACD', '#2C3333'])
             fig_yn.update_layout(
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
                 margin=dict(t=10, b=50, l=10, r=10), 
                 height=250 
             )
-            # Coluna centralizada para o gráfico
-            col_left, col_donut, col_right = st.columns([1, 2, 1])
-            with col_donut:
+            
+            col_left, col_pie, col_right = st.columns([1, 2, 1])
+            with col_pie:
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
 
         with col2:
@@ -254,8 +253,8 @@ if choice == "🔍 Pesquisar":
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
-        # Espaçamento aumentado
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        # Espaçamento extra aumentado entre Famílias e Perfumistas
+        st.markdown("<br><br><br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
             # GRÁFICO 3: FAMÍLIA
@@ -263,7 +262,7 @@ if choice == "🔍 Pesquisar":
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.25, xanchor="center", x=0.5), margin=dict(t=10, b=120), height=340)
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
@@ -363,4 +362,3 @@ elif choice == "🗑️ Apagar":
             df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
             st.warning("Eliminado.")
             st.rerun()
-            
