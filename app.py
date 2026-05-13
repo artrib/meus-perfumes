@@ -319,7 +319,7 @@ elif choice == "➕ Adicionar":
                 st.success("Guardado!")
                 st.rerun()
 
-elif choice == "📝 Editar":
+elif choice == "📋 Editar":
     st.subheader("Editar")
     if not df.empty:
         lista_perfumes = sorted(df["Nome do Perfume"].unique().tolist())
