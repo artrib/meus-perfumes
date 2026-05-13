@@ -211,14 +211,36 @@ if choice == "🔍 Pesquisar":
             fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
 
-            # GRÁFICO 5: OCASIÕES DE USO
+             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
-            c_oc = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts().reset_index(name="count")
+            c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
-            fig5 = px.bar(c_oc, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'])
+            
+            # Define a ordem desejada das colunas
+            ordem_desejada = [
+                "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
+                "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
+                "ESPECIAL", "GERAL"
+            ]
+            
+            fig5 = px.bar(
+                c_oc, 
+                x="Ocasiões", 
+                y="count", 
+                text="count", 
+                color_discrete_sequence=['#C08261'],
+                category_orders={"Ocasiões": ordem_desejada}
+            )
+            
             fig5.update_traces(width=0.45, textposition='outside')
-            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
+            fig5.update_layout(
+                xaxis_title=None, 
+                yaxis_title=None, 
+                margin=dict(t=40, b=10), 
+                height=350
+            )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
+
 
             # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
