@@ -381,8 +381,8 @@ elif choice == "➕ Adicionar":
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 
                 # Feedback de sucesso
-                st.toast("PERFUME SALVO", icon="✅")
-                time.sleep(3) # Pausa para ver o toast
+                st.toast("PERFUME SALVO COM SUCESSO", icon="✅")
+                time.sleep(2) # Pausa para ver o toast
                 st.rerun()
 
 elif choice == "📋 Editar":
