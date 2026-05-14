@@ -210,8 +210,8 @@ if choice == "🔍 Pesquisar":
             
             # Define a ordem desejada das colunas conforme solicitado
             ordem_estacoes = [
-                "COLONIAS", "PRIMAVERA", "VERAO", "PRI/VER", 
-                "Meia-estação", "Outono", "Inverno", "Out/inv", "Geral"
+                "Colonias", "Primavera", "Verao", "Pri/ver", 
+                "Meia-estacao", "Outono", "Inverno", "Out/inv", "Geral"
             ]
             
             fig1 = px.bar(
