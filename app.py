@@ -316,6 +316,9 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
+            # Adiciona um espaçamento antes do gráfico dos Perfumistas
+            st.markdown("<br><br>", unsafe_allow_html=True)
+            
             # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
