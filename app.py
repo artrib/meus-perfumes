@@ -249,7 +249,7 @@ if choice == "🔍 Pesquisar":
             col_left, col_donut, col_right = st.columns([1, 2, 1])
             with col_donut:
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
-
+            
         with col2:
             # GRÁFICO 2: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
