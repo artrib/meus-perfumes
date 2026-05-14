@@ -263,34 +263,52 @@ if choice == "🔍 Pesquisar":
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
 # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
-            st.markdown("<br>", unsafe_allow_html=True)
-            def classificar_periodo(row):
-                oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
-                dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
-                noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
-                
-                if any(tag in oc for tag in dia_tags): return "DIA"
-                if any(tag in oc for tag in noite_tags): return "NOITE"
-                return "OUTROS"
+st.markdown("<br>", unsafe_allow_html=True)
 
-            df_temp = df.copy()
-            df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
-            df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
-            df_pie.columns = ["Periodo", "count"]
-            
-            # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#FFFACD', '#2C3333'])
-            # Centralização via legenda abaixo e redução de tamanho
-            fig_yn.update_layout(
-                showlegend=True, 
-                legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
-                margin=dict(t=10, b=50, l=10, r=10), 
-                height=250 
-            )
-            # Coluna centralizada para o gráfico
-            col_left, col_donut, col_right = st.columns([1, 2, 1])
-            with col_donut:
-                st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
+# 1. Classificação explícita baseada nas suas tags padrão
+def classificar_periodo(row):
+    # Transforma a célula em lista de strings tratadas
+    tags = [t.strip().upper() for t in str(row["Ocasiões de Uso"]).split(',')]
+    
+    dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
+    noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
+    
+    # Verifica interseção
+    if any(tag in dia_tags for tag in tags): return "DIA"
+    if any(tag in noite_tags for tag in tags): return "NOITE"
+    return "OUTROS"
+
+# 2. Processamento dos dados
+df_temp = df.copy()
+df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
+
+# Filtra apenas DIA e NOITE para o gráfico
+df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]
+df_pie = df_pie["Periodo"].value_counts().reset_index()
+df_pie.columns = ["Periodo", "count"]
+
+# 3. Renderização
+if not df_pie.empty:
+    fig_yn = px.pie(
+        df_pie, 
+        values='count', 
+        names='Periodo', 
+        hole=0.5, 
+        color_discrete_sequence=['#FFFACD', '#2C3333'] # Amarelo claro para Dia, Cinza escuro para Noite
+    )
+    
+    fig_yn.update_layout(
+        showlegend=True, 
+        legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
+        margin=dict(t=10, b=50, l=10, r=10), 
+        height=250 
+    )
+    
+    col_left, col_donut, col_right = st.columns([1, 2, 1])
+    with col_donut:
+        st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
+else:
+    st.info("Dados insuficientes para o gráfico de Dia/Noite.")
 
         with col2:
             # GRÁFICO 2: NOTAS
