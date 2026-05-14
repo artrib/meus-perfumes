@@ -1,8 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 import os
 import unicodedata
 import plotly.express as px
+import time
 
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
@@ -360,18 +362,27 @@ elif choice == "➕ Adicionar":
             notas = st.text_area("Notas Olfativas")
 
         if st.form_submit_button("Guardar"):
-            if nome:
+            if not nome:
+                st.warning("O nome do perfume é obrigatório!")
+            else:
+                # Lógica de processamento
                 fam_clean = ", ".join([padronizar_texto(f) for f in fam.replace('/', ',').split(',') if f.strip()])
                 notas_clean = ", ".join([padronizar_texto(n) for n in notas.split(',') if n.strip()])
                 perf_clean = padronizar_texto(perf)
+                
                 new = pd.DataFrame([{
                     "Ano": ano, "Nome do Perfume": nome, "Estações do Ano": ", ".join(est),
                     "Ocasiões de Uso": ", ".join(oc), "Família Olfativa": fam_clean,
                     "Notas Olfativas": notas_clean, "Marca": marca, "Perfumista": perf_clean
                 }])
+                
+                # Atualiza o CSV
                 df = pd.concat([df, new], ignore_index=True)
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Guardado!")
+                
+                # Feedback de sucesso
+                st.toast("Perfume guardado com sucesso!", icon="✅")
+                time.sleep(1) # Pausa para ver o toast
                 st.rerun()
 
 elif choice == "📋 Editar":
