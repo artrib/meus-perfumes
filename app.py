@@ -241,7 +241,7 @@ if choice == "🔍 Pesquisar":
             
             # Define a ordem desejada das colunas
             ordem_desejada = [
-                "Casual Dia", "FORMAL DIA", "TRABALHO PRI/VER", 
+                "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
                 "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
                 "ESPECIAL", "GERAL"
             ]
