@@ -117,7 +117,7 @@ df = load_data()
 # TÍTULO
 # =========================================================
 
-st.markdown("<h2 style='text-align:left; font-size:37px; color: #e6eaf2;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:left; font-size:37px; color: #c8cfde;'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 # =========================================================
 # MENU
