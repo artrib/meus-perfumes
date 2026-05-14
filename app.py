@@ -369,4 +369,4 @@ elif choice == "🗑️ Apagar":
             st.warning("Eliminado.")
             st.rerun()
 
-        
+    
