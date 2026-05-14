@@ -303,7 +303,7 @@ if choice == "🔍 Pesquisar":
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#94A684'])
+            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#607274'])
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
@@ -327,7 +327,7 @@ if choice == "🔍 Pesquisar":
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#607274'])
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
