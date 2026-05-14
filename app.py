@@ -210,7 +210,7 @@ if choice == "🔍 Pesquisar":
             
             # Define a ordem desejada das colunas conforme solicitado
             ordem_estacoes = [
-                "Colonias", "Primavera", "Verao", "Pri/ver", 
+                "Colonia", "Primavera", "Verao", "Pri/ver", 
                 "Meia-estacao", "Outono", "Inverno", "Out/inv", "Geral"
             ]
             
