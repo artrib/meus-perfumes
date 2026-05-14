@@ -11,6 +11,95 @@ if "menu_choice" not in st.session_state:
     st.session_state.menu_choice = "🔍 Pesquisar"
 
 # =========================================================
+# MENU
+# =========================================================
+
+def mudar_menu():
+    st.session_state.menu_choice = st.session_state.radio_menu
+
+menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
+
+# Menu Lateral Sincronizado
+choice = st.sidebar.radio(
+    "Menu", 
+    menu, 
+    index=menu.index(st.session_state.menu_choice),
+    key="radio_menu",
+    on_change=mudar_menu
+)
+
+# =========================================================
+# 1. PESQUISAR E ESTATÍSTICAS
+# =========================================================
+
+if choice == "🔍 Pesquisar":
+    col_busca, col_filtro = st.columns([3, 1])
+    
+    with col_busca:
+        search = st.text_input("", placeholder="🔍")
+    
+    with col_filtro:
+        opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Estações do Ano", "Ocasiões de Uso", "Perfumista", "Marca", "Nome do Perfume"]
+        local_busca = st.selectbox("filtros", opcoes_busca)
+        
+    result = df.copy()
+    result.insert(0, "Editar", False)
+
+    if search:
+        if local_busca == "Notas Olfativas":
+            t_padronizado = padronizar_texto(search)
+            def match_exact_note(cell_value):
+                if not cell_value: return False
+                notas_no_banco = [padronizar_texto(n) for n in str(cell_value).split(",")]
+                return t_padronizado in notas_no_banco
+            mask = result["Notas Olfativas"].apply(match_exact_note)
+            result = result[mask].copy()
+        else:
+            termos = search.split()
+            for termo in termos:
+                t_norm = remover_acentos(termo)
+                if local_busca == "Tudo":
+                    mask = result.apply(
+                        lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
+                        axis=1
+                    )
+                else:
+                    mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
+                result = result[mask].copy()
+
+    st.write(f"{len(result)} perfumes")
+
+    if not df.empty:
+        edited_df = st.data_editor(
+            result.reset_index(drop=True),
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Editar": st.column_config.CheckboxColumn("", default=False),
+                "Ano": st.column_config.TextColumn("Ano", width=55),
+                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
+                "Marca": st.column_config.TextColumn("Marca", width=120),
+                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
+                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
+                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
+            },
+            disabled=[c for c in result.columns if c != "Editar"]
+        )
+
+        check_click = edited_df[edited_df["Editar"] == True]
+        if not check_click.empty:
+            # --- ATUALIZAÇÃO PARA NAVEGAÇÃO AUTOMÁTICA ---
+            st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+            st.session_state.menu_choice = "📋 Editar" # Muda para aba editar
+            st.rerun()
+
+        if not result.empty:
+            _, col_center, _ = st.columns([1, 2, 1])
+            with col_center:
+                csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
+                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+                
+# =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
 # =========================================================
 if "edit_perfume" not in st.session_state:
@@ -128,94 +217,6 @@ df = load_data()
 
 st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color);'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
-# =========================================================
-# MENU
-# =========================================================
-
-def mudar_menu():
-    st.session_state.menu_choice = st.session_state.radio_menu
-
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
-
-# Menu Lateral Sincronizado
-choice = st.sidebar.radio(
-    "Menu", 
-    menu, 
-    index=menu.index(st.session_state.menu_choice),
-    key="radio_menu",
-    on_change=mudar_menu
-)
-
-# =========================================================
-# 1. PESQUISAR E ESTATÍSTICAS
-# =========================================================
-
-if choice == "🔍 Pesquisar":
-    col_busca, col_filtro = st.columns([3, 1])
-    
-    with col_busca:
-        search = st.text_input("", placeholder="🔍")
-    
-    with col_filtro:
-        opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Estações do Ano", "Ocasiões de Uso", "Perfumista", "Marca", "Nome do Perfume"]
-        local_busca = st.selectbox("filtros", opcoes_busca)
-        
-    result = df.copy()
-    result.insert(0, "Editar", False)
-
-    if search:
-        if local_busca == "Notas Olfativas":
-            t_padronizado = padronizar_texto(search)
-            def match_exact_note(cell_value):
-                if not cell_value: return False
-                notas_no_banco = [padronizar_texto(n) for n in str(cell_value).split(",")]
-                return t_padronizado in notas_no_banco
-            mask = result["Notas Olfativas"].apply(match_exact_note)
-            result = result[mask].copy()
-        else:
-            termos = search.split()
-            for termo in termos:
-                t_norm = remover_acentos(termo)
-                if local_busca == "Tudo":
-                    mask = result.apply(
-                        lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
-                        axis=1
-                    )
-                else:
-                    mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
-                result = result[mask].copy()
-
-    st.write(f"{len(result)} perfumes")
-
-    if not df.empty:
-        edited_df = st.data_editor(
-            result.reset_index(drop=True),
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Editar": st.column_config.CheckboxColumn("", default=False),
-                "Ano": st.column_config.TextColumn("Ano", width=55),
-                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
-                "Marca": st.column_config.TextColumn("Marca", width=120),
-                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
-                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
-                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
-            },
-            disabled=[c for c in result.columns if c != "Editar"]
-        )
-
-        check_click = edited_df[edited_df["Editar"] == True]
-        if not check_click.empty:
-            # --- ATUALIZAÇÃO PARA NAVEGAÇÃO AUTOMÁTICA ---
-            st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
-            st.session_state.menu_choice = "📋 Editar" # Muda para aba editar
-            st.rerun()
-
-        if not result.empty:
-            _, col_center, _ = st.columns([1, 2, 1])
-            with col_center:
-                csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
