@@ -262,7 +262,7 @@ if choice == "🔍 Pesquisar":
             )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+# NOVO GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
             def classificar_periodo(row):
                 oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
@@ -279,13 +279,13 @@ if choice == "🔍 Pesquisar":
             df_pie.columns = ["Periodo", "count"]
             
             # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#c7adc9', '#0d0000'])
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.5, color_discrete_sequence=['#FFFACD', '#2C3333'])
             # Centralização via legenda abaixo e redução de tamanho
             fig_yn.update_layout(
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
                 margin=dict(t=10, b=50, l=10, r=10), 
-                height=300 
+                height=250 
             )
             # Coluna centralizada para o gráfico
             col_left, col_donut, col_right = st.columns([1, 2, 1])
