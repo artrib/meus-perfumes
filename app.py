@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import unicodedata
 import plotly.express as px
+import time
 
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
