@@ -360,18 +360,34 @@ elif choice == "➕ Adicionar":
             notas = st.text_area("Notas Olfativas")
 
         if st.form_submit_button("Guardar"):
-            if nome:
+            if not nome:
+                st.warning("O nome do perfume é obrigatório!")
+            else:
+                # Lógica de processamento
                 fam_clean = ", ".join([padronizar_texto(f) for f in fam.replace('/', ',').split(',') if f.strip()])
                 notas_clean = ", ".join([padronizar_texto(n) for n in notas.split(',') if n.strip()])
                 perf_clean = padronizar_texto(perf)
+                
                 new = pd.DataFrame([{
                     "Ano": ano, "Nome do Perfume": nome, "Estações do Ano": ", ".join(est),
                     "Ocasiões de Uso": ", ".join(oc), "Família Olfativa": fam_clean,
                     "Notas Olfativas": notas_clean, "Marca": marca, "Perfumista": perf_clean
                 }])
+                
+                # Atualiza o CSV
                 df = pd.concat([df, new], ignore_index=True)
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success("Guardado!")
+                
+                # --- LOGICA DE RESET ---
+                # Define a página de destino para o próximo carregamento
+                st.session_state.menu_choice = "🔍 Pesquisar"
+                
+                # Feedback de sucesso
+                st.toast("PERFUME SALVO COM SUCESSO", icon="✅")
+                time.sleep(2) 
+                
+                # O rerun() forçará o Streamlit a ler o topo do código, 
+                # onde o radio lerá o novo valor do session_state.menu_choice
                 st.rerun()
 
 elif choice == "📋 Editar":
