@@ -195,7 +195,9 @@ if choice == "🔍 Pesquisar":
             with col_center:
                 csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
-
+# =========================================================
+# MODOLO DE GRAFICOS 
+# =========================================================
         st.markdown("---")
         config_fixo = {'staticPlot': True}
         paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
@@ -210,7 +212,7 @@ if choice == "🔍 Pesquisar":
             
             # Define a ordem desejada das colunas conforme solicitado
             ordem_estacoes = [
-                "Colonias", "Primavera", "Verao", "Pri/ver", 
+                "Colonia", "Primavera", "Verao", "Pri/ver", 
                 "Meia-estacao", "Outono", "Inverno", "Out/inv", "Geral"
             ]
             
