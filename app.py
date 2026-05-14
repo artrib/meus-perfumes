@@ -6,6 +6,10 @@ import unicodedata
 import plotly.express as px
 import time
 
+# Inicializar o estado do menu, se ainda não existir
+if "menu_choice" not in st.session_state:
+    st.session_state.menu_choice = "🔍 Pesquisar"
+
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
 # =========================================================
@@ -128,9 +132,19 @@ st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color
 # MENU
 # =========================================================
 
+def mudar_menu():
+    st.session_state.menu_choice = st.session_state.radio_menu
+
 menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
-default_index = 2 if st.session_state.edit_perfume else 0
-choice = st.sidebar.radio("", menu, index=default_index)
+
+# Menu Lateral Sincronizado
+choice = st.sidebar.radio(
+    "Menu", 
+    menu, 
+    index=menu.index(st.session_state.menu_choice),
+    key="radio_menu",
+    on_change=mudar_menu
+)
 
 # =========================================================
 # 1. PESQUISAR E ESTATÍSTICAS
@@ -192,7 +206,9 @@ if choice == "🔍 Pesquisar":
 
         check_click = edited_df[edited_df["Editar"] == True]
         if not check_click.empty:
+            # --- ATUALIZAÇÃO PARA NAVEGAÇÃO AUTOMÁTICA ---
             st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+            st.session_state.menu_choice = "📋 Editar" # Muda para aba editar
             st.rerun()
 
         if not result.empty:
