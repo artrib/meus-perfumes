@@ -5,6 +5,38 @@ import unicodedata
 import plotly.express as px
 import time
 
+# 1. ESTILO CSS (ADAPTAÇÃO AUTOMÁTICA DE COR)
+st.markdown("""
+    <style>
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label p {
+            color: var(--text-color) !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+        }
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input[checked] + div p {
+            text-decoration: underline;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# 2. INICIALIZAÇÃO DO ESTADO DO MENU
+if "menu_choice" not in st.session_state:
+    st.session_state.menu_choice = "🔍 Pesquisar"
+
+# 3. CRIAÇÃO DO MENU LATERAL
+menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
+
+choice = st.sidebar.radio(
+    "Menu", 
+    menu, 
+    index=menu.index(st.session_state.menu_choice)
+)
+
+# Sincroniza o clique manual com o estado
+if choice != st.session_state.menu_choice:
+    st.session_state.menu_choice = choice
+    st.rerun()
+
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
 # =========================================================
