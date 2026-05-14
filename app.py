@@ -262,7 +262,6 @@ if choice == "🔍 Pesquisar":
             )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-
             # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
             def classificar_periodo(row):
