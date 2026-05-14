@@ -23,15 +23,6 @@ st.markdown("""
 if "menu_choice" not in st.session_state:
     st.session_state.menu_choice = "🔍 Pesquisar"
 
-# 3. CRIAÇÃO DO MENU LATERAL
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
-
-choice = st.sidebar.radio(
-    "Menu", 
-    menu, 
-    index=menu.index(st.session_state.menu_choice)
-)
-
 # Sincroniza o clique manual com o estado
 if choice != st.session_state.menu_choice:
     st.session_state.menu_choice = choice
