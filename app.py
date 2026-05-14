@@ -196,7 +196,7 @@ if choice == "🔍 Pesquisar":
                 csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 # =========================================================
-# MODOLO DE GRAFICOS 
+# MODULO DE GRAFICOS 
 # =========================================================
         st.markdown("---")
         config_fixo = {'staticPlot': True}
@@ -281,7 +281,7 @@ if choice == "🔍 Pesquisar":
             df_pie.columns = ["Periodo", "count"]
             
             # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#c7adc9', '#0d0000'])
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#bd8f11', '#0d0000'])
             # Centralização via legenda abaixo e redução de tamanho
             fig_yn.update_layout(
                 showlegend=True, 
