@@ -204,13 +204,34 @@ if choice == "🔍 Pesquisar":
         with col1:
             # GRÁFICO 1: ESTAÇÕES
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
+            # Filtra vazios e padroniza para garantir que batam com a lista definida
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_est.columns = ["Estações do Ano", "count"]
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'])
+            
+            # Define a ordem desejada das colunas conforme solicitado
+            ordem_estacoes = [
+                "Colonias", "Primavera", "Verao", "Pri/ver", 
+                "Meia-estacao", "Outono", "Inverno", "Out/inv", "Geral"
+            ]
+            
+            fig1 = px.bar(
+                c_est, 
+                x="Estações do Ano", 
+                y="count", 
+                text="count", 
+                color_discrete_sequence=['#B0A695'],
+                category_orders={"Estações do Ano": ordem_estacoes}
+            )
+            
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
+            fig1.update_layout(
+                xaxis_title=None, 
+                yaxis_title=None, 
+                margin=dict(t=20, b=10), 
+                height=350
+            )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
-
+            
             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].apply(lambda x: x.upper()).value_counts().reset_index(name="count")
