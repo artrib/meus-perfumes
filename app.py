@@ -380,9 +380,16 @@ elif choice == "➕ Adicionar":
                 df = pd.concat([df, new], ignore_index=True)
                 df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
                 
+                # --- LOGICA DE RESET ---
+                # Define a página de destino para o próximo carregamento
+                st.session_state.menu_choice = "🔍 Pesquisar"
+                
                 # Feedback de sucesso
                 st.toast("PERFUME SALVO COM SUCESSO", icon="✅")
-                time.sleep(2) # Pausa para ver o toast
+                time.sleep(2) 
+                
+                # O rerun() forçará o Streamlit a ler o topo do código, 
+                # onde o radio lerá o novo valor do session_state.menu_choice
                 st.rerun()
 
 elif choice == "📋 Editar":
