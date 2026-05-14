@@ -100,7 +100,10 @@ def load_data():
             # --- CORREÇÃO DO ANO ---
             df["Ano"] = pd.to_numeric(df["Ano"], errors='coerce')
             df["Ano"] = df["Ano"].apply(lambda x: str(int(x)) if pd.notnull(x) else "")
-            
+
+            # REMOVE NOMES DE PERFUMES DIPLICADOS:
+            df = df.drop_duplicates(subset=["Nome do Perfume"], keep='first')
+
             return df.fillna("").astype(str)[cols]
         except Exception as e:
             st.error(f"Erro ao carregar CSV: {e}")
