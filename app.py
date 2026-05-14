@@ -412,11 +412,29 @@ elif choice == "📋 Editar":
 elif choice == "🗑️ Apagar":
     st.subheader("Eliminar")
     if not df.empty:
-        p_del = st.selectbox("Perfume:", sorted(df["Nome do Perfume"].unique().tolist()))
-        if st.button("Confirmar"):
-            df = df[df["Nome do Perfume"] != p_del]
-            df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-            st.warning("Eliminado.")
-            st.rerun()
+        p_del = st.selectbox("Selecione o perfume para eliminar:", sorted(df["Nome do Perfume"].unique().tolist()))
+        
+        # Cria um espaço para a confirmação
+        if st.button("Eliminar este perfume"):
+            st.session_state.confirmar_delete = p_del
+        
+        # Verifica se o pedido de delete foi feito
+        if "confirmar_delete" in st.session_state and st.session_state.confirmar_delete == p_del:
+            st.warning(f"Tem a certeza que deseja eliminar '{p_del}'? Esta ação é irreversível.")
+            
+            col_sim, col_nao = st.columns(2)
+            if col_sim.button("Sim, eliminar"):
+                # Realiza a exclusão
+                df = df[df["Nome do Perfume"] != p_del]
+                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                st.success(f"'{p_del}' eliminado com sucesso.")
+                # Limpa o estado
+                del st.session_state.confirmar_delete
+                st.rerun()
+            
+            if col_nao.button("Cancelar"):
+                del st.session_state.confirmar_delete
+                st.rerun()
+
 
     
