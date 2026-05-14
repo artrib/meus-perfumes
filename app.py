@@ -285,7 +285,7 @@ if choice == "🔍 Pesquisar":
             df_pie.columns = ["Periodo", "count"]
             
             # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#94A684', '#b0a695'])
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#8EACCD', '#5e5d56'])
             # Centralização via legenda abaixo e redução de tamanho
             fig_yn.update_layout(
                 showlegend=True, 
@@ -303,7 +303,7 @@ if choice == "🔍 Pesquisar":
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
+            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
