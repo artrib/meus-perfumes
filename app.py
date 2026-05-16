@@ -127,7 +127,7 @@ st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color
 # MENU
 # =========================================================
 
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
+menu = [" Pesquisar", " Adicionar", " Editar", " Apagar"]
 default_index = 2 if st.session_state.edit_perfume else 0
 choice = st.sidebar.radio("", menu, index=default_index)
 
