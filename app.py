@@ -188,7 +188,7 @@ if choice == "🔍 Pesquisar":
             use_container_width=True,
             hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
             column_config={
-                "Editar": st.column_config.CheckboxColumn("Editar", width=35, default=False),
+                "Editar": st.column_config.CheckboxColumn("Editar", width=30, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
