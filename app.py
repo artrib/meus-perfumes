@@ -183,7 +183,7 @@ if choice == "🔍 Pesquisar":
         todas_colunas = ["Editar", "Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso", "Família Olfativa", "Perfumista"]
         
         # Criamos um botão discreto tipo "toggle" (Olho) para ativar/desativar a coluna de edição
-        mostrar_coluna_editar = st.checkbox("👁️ Mostrar coluna de edição", value=False)
+        mostrar_coluna_editar = st.checkbox("👁️ modo edição", value=False)
         
         # Se o "olho" não estiver ativo, removemos a coluna "Editar" da ordem de exibição
         if not mostrar_coluna_editar:
