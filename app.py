@@ -135,7 +135,7 @@ choice = st.sidebar.radio("", menu, index=default_index)
 # 1. PESQUISAR E ESTATÍSTICAS
 # =========================================================
 
-if choice == "🔍 Pesquisar":
+if choice == " Pesquisar":
     col_busca, col_filtro = st.columns([3, 1])
     
     with col_busca:
@@ -355,7 +355,7 @@ if choice == "🔍 Pesquisar":
 # ADICIONAR / EDITAR / APAGAR
 # =========================================================
 
-elif choice == "➕ Adicionar":
+elif choice == " Adicionar":
     st.subheader("Novo Registo")
     with st.form("add"):
         c1, c2 = st.columns(2)
@@ -401,7 +401,7 @@ elif choice == "➕ Adicionar":
                 # onde o radio lerá o novo valor do session_state.menu_choice
                 st.rerun()
 
-elif choice == "📋 Editar":
+elif choice == " Editar":
     st.subheader("Editar")
     if not df.empty:
         lista_perfumes = sorted(df["Nome do Perfume"].unique().tolist())
@@ -436,7 +436,7 @@ elif choice == "📋 Editar":
                 st.success("Atualizado!")
                 st.rerun()
 
-elif choice == "🗑️ Apagar":
+elif choice == " Apagar":
     st.subheader("Eliminar")
     if not df.empty:
         p_del = st.selectbox("Selecione o perfume para eliminar:", sorted(df["Nome do Perfume"].unique().tolist()))
