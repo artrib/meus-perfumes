@@ -175,21 +175,12 @@ if choice == "🔍 Pesquisar":
     if not df.empty:
         df_display = result.reset_index(drop=True)
         
-        # 1. Criamos um estado para controlar se o utilizador ativou o modo de edição na tabela
+        # Controla se a coluna de edição deve ser exibida
         if "mostrar_editar" not in st.session_state:
             st.session_state.mostrar_editar = False
 
         # Definimos a lista base de colunas na ordem original
         colunas_originais = ["Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"]
-        
-        # Se estiver ativo, a coluna "Editar" entra exatamente na primeira posição (índice 0)
-        if st.session_state.mostrar_editar:
-            df_display.insert(0, "Editar", False)
-            ordem_atual = ["Editar"] + colunas_originais
-        else:
-            ordem_atual = colunas_originais
-
-        # Configuração das colunas
         config_colunas = {
             "Ano": st.column_config.TextColumn("Ano", width=55),
             "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
@@ -199,33 +190,41 @@ if choice == "🔍 Pesquisar":
             "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
         }
         
-        # Se a coluna estiver ativa, adicionamos a configuração do quadradinho
+        # Altera dinamicamente a estrutura e a CHAVE da tabela para evitar o TypeError
         if st.session_state.mostrar_editar:
+            df_display.insert(0, "Editar", False)
+            ordem_atual = ["Editar"] + colunas_originais
             config_colunas["Editar"] = st.column_config.CheckboxColumn("", default=False, width=40)
+            tabela_key = "tabela_com_editar"
+        else:
+            ordem_atual = colunas_originais
+            tabela_key = "tabela_sem_editar"
 
         edited_df = st.data_editor(
             df_display,
             use_container_width=True,
             hide_index=True,
-            column_order=ordem_atual, # Garante a ordem exata sem mover colunas de sítio
+            column_order=ordem_atual,
             column_config=config_colunas,
             disabled=[c for c in df_display.columns if c != "Editar"],
-            selection_mode="single_row", # O clique na linha serve de gatilho para fazer aparecer a coluna
-            key="tabela_dinamica"
+            selection_mode="single_row",
+            key=tabela_key  # <--- Chave dinâmica resolve o erro de renderização
         )
 
-        # Gatilho 1: Se o utilizador clicar na linha, ativa a coluna "Editar" na primeira posição
-        selecao = st.session_state.tabela_dinamica.get("selection", {}).get("rows", [])
+        # Captura a seleção baseada na chave que estiver ativa no momento
+        estado_tabela = st.session_state.get(tabela_key, {})
+        selecao = estado_tabela.get("selection", {}).get("rows", [])
+
+        # Gatilho 1: Se clicou na linha e a coluna ainda não aparece -> Ativa
         if selecao and not st.session_state.mostrar_editar:
             st.session_state.mostrar_editar = True
             st.rerun()
 
-        # Gatilho 2: Se a coluna já está visível e o quadradinho for marcado, avança para a edição
+        # Gatilho 2: Se a coluna já existe e o quadradinho foi marcado -> Edita
         if st.session_state.mostrar_editar and "Editar" in edited_df.columns:
             check_click = edited_df[edited_df["Editar"] == True]
             if not check_click.empty:
                 st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
-                # Resetamos o estado para que na próxima pesquisa comece oculta outra vez
                 st.session_state.mostrar_editar = False 
                 st.rerun()
 
@@ -234,7 +233,7 @@ if choice == "🔍 Pesquisar":
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
-
+                
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
