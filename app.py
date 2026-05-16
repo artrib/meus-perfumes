@@ -127,7 +127,7 @@ st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color
 # MENU
 # =========================================================
 
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
+menu = ["Pesquisar", "Adicionar", "Editar", "Apagar"]
 default_index = 2 if st.session_state.edit_perfume else 0
 choice = st.sidebar.radio("", menu, index=default_index)
 
@@ -188,7 +188,7 @@ if choice == "🔍 Pesquisar":
             use_container_width=True,
             hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
             column_config={
-                "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
+                "Editar": st.column_config.CheckboxColumn("edit", width=30, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
