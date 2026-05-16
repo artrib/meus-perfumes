@@ -173,70 +173,74 @@ if choice == "🔍 Pesquisar":
     st.write(f"{len(result)} perfumes")
 
     if not df.empty:
+        # 1. Preparação estável do DataFrame: a coluna "Editar" está SEMPRE presente na estrutura
         df_display = result.reset_index(drop=True)
+        df_display.insert(0, "Editar", False)
         
-        # Controla se a coluna de edição deve ser exibida
+        # Inicializa o estado de controlo visual
         if "mostrar_editar" not in st.session_state:
             st.session_state.mostrar_editar = False
 
-        # Definimos a lista base de colunas na ordem original
-        colunas_originais = ["Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"]
-        config_colunas = {
-            "Ano": st.column_config.TextColumn("Ano", width=55),
-            "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
-            "Marca": st.column_config.TextColumn("Marca", width=120),
-            "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
-            "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
-            "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
-        }
+        # 2. Definimos quais colunas o Streamlit vai REALMENTE desenhar no ecrã
+        colunas_restantes = ["Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"]
         
-        # Altera dinamicamente a estrutura e a CHAVE da tabela para evitar o TypeError
         if st.session_state.mostrar_editar:
-            df_display.insert(0, "Editar", False)
-            ordem_atual = ["Editar"] + colunas_originais
-            config_colunas["Editar"] = st.column_config.CheckboxColumn("", default=False, width=40)
-            tabela_key = "tabela_com_editar"
+            # Se ativo, desenha a coluna "Editar" exatamente na primeira posição
+            ordem_visual = ["Editar"] + colunas_restantes
         else:
-            ordem_atual = colunas_originais
-            tabela_key = "tabela_sem_editar"
+            # Se oculto por padrão, simplesmente ignora a coluna "Editar" na renderização
+            ordem_visual = colunas_restantes
 
         edited_df = st.data_editor(
             df_display,
             use_container_width=True,
             hide_index=True,
-            column_order=ordem_atual,
-            column_config=config_colunas,
+            column_order=ordem_visual,  # <--- O segredo está aqui: controla a visibilidade sem quebrar a cache
+            column_config={
+                "Editar": st.column_config.CheckboxColumn("", default=False, width=40),
+                "Ano": st.column_config.TextColumn("Ano", width=55),
+                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
+                "Marca": st.column_config.TextColumn("Marca", width=120),
+                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
+                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
+                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
+            },
             disabled=[c for c in df_display.columns if c != "Editar"],
-            selection_mode="single_row",
-            key=tabela_key  # <--- Chave dinâmica resolve o erro de renderização
+            selection_mode="single_row",  # Mantém o clique nativo na linha
+            key="tabela_perfumes_estavel"   # Chave única e fixa para estabilidade total
         )
 
-        # Captura a seleção baseada na chave que estiver ativa no momento
-        estado_tabela = st.session_state.get(tabela_key, {})
-        selecao = estado_tabela.get("selection", {}).get("rows", [])
+        # 3. Processamento das interações através do estado nativo da tabela
+        estado_tabela = st.session_state.tabela_perfumes_estavel
+        selecao_linhas = estado_tabela.get("selection", {}).get("rows", [])
+        dados_editados = estado_tabela.get("edited_rows", {})
 
-        # Gatilho 1: Se clicou na linha e a coluna ainda não aparece -> Ativa
-        if selecao and not st.session_state.mostrar_editar:
+        # Gatilho A: Utilizador clicou na linha -> Mostra a coluna "Editar" de forma suave
+        if selecao_linhas and not st.session_state.mostrar_editar:
             st.session_state.mostrar_editar = True
             st.rerun()
 
-        # Gatilho 2: Se a coluna já existe e o quadradinho foi marcado -> Edita
-        if st.session_state.mostrar_editar and "Editar" in edited_df.columns:
-            check_click = edited_df[edited_df["Editar"] == True]
-            if not check_click.empty:
-                st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
-                st.session_state.mostrar_editar = False 
+        # Gatilho B: A coluna já existia e o utilizador marcou o quadradinho da linha
+        if st.session_state.mostrar_editar:
+            # Verificamos se houve alteração na checkbox através do 'edited_rows' (mais rápido e seguro)
+            quadradinho_marcado = False
+            for idx_linha, alteracao in dados_editados.items():
+                if alteracao.get("Editar") is True:
+                    # Vai buscar o nome correto do perfume usando o índice da linha editada
+                    st.session_state.edit_perfume = df_display.iloc[int(idx_linha)]["Nome do Perfume"]
+                    quadradinho_marcado = True
+                    break
+            
+            if quadradinho_marcado:
+                st.session_state.mostrar_editar = False
                 st.rerun()
 
         if not result.empty:
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
+              # Removemos a coluna técnica antes do download para o CSV ir limpo
                 csv = result.to_csv(index=False).encode('utf-8-sig')
-                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
-                
-# =========================================================
-# MODULO DE GRAFICOS 
-# =========================================================
+                st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True) MODULO DE GRAFICOS # =========================================================
         st.markdown("---")
         config_fixo = {'staticPlot': True}
         paleta_minimalista = ['#8EACCD', '#94A684', '#B0A695', '#C08261', '#607274', '#E5BA73']
