@@ -127,7 +127,7 @@ st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color
 # MENU
 # =========================================================
 
-menu = ["🔍 Pesquisar", "➕ Adicionar", "📋 Editar", "🗑️ Apagar"]
+menu = ["Pesquisar", "Adicionar", "Editar", "Apagar"]
 default_index = 2 if st.session_state.edit_perfume else 0
 choice = st.sidebar.radio("", menu, index=default_index)
 
@@ -173,7 +173,7 @@ if choice == "🔍 Pesquisar":
                     mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
                 result = result[mask].copy()
 
-    st.write(f"{len(result)} perfumes")
+    st.markdown(f"<span style='font-size: 13px; color: #666;'>👁️ {len(result)} perfumes</span>", unsafe_allow_html=True)
 
     if not df.empty:
         # =========================================================
