@@ -198,7 +198,7 @@ if not df.empty:
             column_order=colunas_visiveis_por_padrao, # <--- Esta linha faz a magia de esconder no início
             column_config={
                 # Configuramos o aspeto do quadradinho para quando ele for ativado no "olho"
-                "Editar": st.column_config.CheckboxColumn("", default=False, width=40),
+                "Editar": st.column_config.CheckboxColumn("🖋️", default=False, width=40),
                 
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
