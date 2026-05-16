@@ -186,7 +186,7 @@ if choice == "🔍 Pesquisar":
         edited_df = st.data_editor(
             df_visual, # <--- Usamos o df com o índice corrigido aqui
             use_container_width=True,
-            hide_index=False, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
             column_config={
                 "Editar": st.column_config.CheckboxColumn("", default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
