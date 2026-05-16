@@ -47,7 +47,7 @@ st.markdown("""
 /* --- AFETA APENAS O CHECKBOX DO MODO EDIÇÃO --- */
 /* Procura um checkbox que tenha um parágrafo contendo a palavra "edição" */
 div[data-testid="stCheckbox"] label:has(p:contains("edição")) p {
-    font-size: 12px !important;       /* Tamanho menor e mais discreto */
+    font-size: 8px !important;       /* Tamanho menor e mais discreto */
     color: #607274 !important;        /* Cor cinza-escura (da tua paleta de marcas) */
     font-weight: 500 !important;
 }
