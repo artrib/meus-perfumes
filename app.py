@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# CSS PERSONALIZADO
+# CSS PERSONALIZADO (Adaptável a Light/Dark Mode)
 # =========================================================
 
 st.markdown("""
@@ -31,6 +31,8 @@ st.markdown("""
     padding-top: 2.5rem !important;
     padding-bottom: 1rem !important;
 }
+
+/* Remove outlines genéricos e sombras ao focar */
 *:focus,
 [data-baseweb="input"] > div:focus-within,
 [data-testid="stDataEditor"] *:focus {
@@ -38,10 +40,35 @@ st.markdown("""
     border-color: #dcdcdc !important;
     box-shadow: none !important;
 }
+
+/* --- CUSTOMIZAÇÃO DO RADIO MENU (SIDEBAR) --- */
+
+/* 1. Altera o texto das opções (Tamanho e Cor dinâmica do tema) */
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
 [data-testid="stSidebar"] .stRadio label p {
-    font-size: 24px !important;
-    font-weight: 800 !important;
-    color: #4F709C !important;
+    font-size: 18px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
+    font-weight: 600 !important;
+    color: var(--text-color) !important; /* Branco no Dark, Preto no Light automaticamente */
+}
+
+/* 2. Círculo não selecionado (Borda externa) */
+[data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] div:first-child {
+    border-color: var(--text-color) !important;
+    opacity: 0.7;
+}
+
+/* 3. Círculo quando selecionado (Borda externa e a "bolinha" interior) */
+[data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] input:checked + div {
+    border-color: var(--text-color) !important;
+}
+
+[data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] input:checked + div ::before {
+    background-color: var(--text-color) !important; /* Bolinha interna segue a cor do texto do tema */
+}
+
+/* Ajuste fino para garantir que o hover/foco do rádio não quebre as cores */
+[data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"]:hover div {
+    border-color: var(--text-color) !important;
 }
 </style>
 """, unsafe_allow_html=True)
