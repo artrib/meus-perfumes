@@ -179,16 +179,17 @@ if choice == "🔍 Pesquisar":
     st.write(f"**{len(result)}** perfumes")
 
     if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
-        df_visual = result.reset_index(drop=True)
-        df_visual.index = df_visual.index + 1  
-        
+        # 1. CRIAR ESTA NOVA LINHA AQUI (para calcular as colunas que começam visíveis)
+        colunas_visiveis = [c for c in result.columns if c != "Editar"]
+
+        # 2. SUBSTITUIR O ST.DATA_EDITOR ANTIGO POR ESTE:
         edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+            result.reset_index(drop=True),
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True,
+            column_order=colunas_visiveis,  # <--- Esta linha garante que a coluna começa escondida
             column_config={
-                "Editar": st.column_config.CheckboxColumn("Editar", width=30, default=False),
+                "Editar": st.column_config.CheckboxColumn("", default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
@@ -198,6 +199,13 @@ if choice == "🔍 Pesquisar":
             },
             disabled=[c for c in result.columns if c != "Editar"]
         )
+
+        # O resto do código abaixo continua exatamente igual...
+        check_click = edited_df[edited_df["Editar"] == True]
+        if not check_click.empty:
+            st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+            st.rerun()
+
 
         check_click = edited_df[edited_df["Editar"] == True]
         if not check_click.empty:
