@@ -139,7 +139,7 @@ if choice == "🔍 Pesquisar":
     col_busca, col_filtro = st.columns([3, 1])
     
     with col_busca:
-        search = st.text_input("", placeholder="🔍")
+        search = st.text_input("pesquisa", placeholder="🔍")
     
     with col_filtro:
         opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Estações do Ano", "Ocasiões de Uso", "Perfumista", "Marca", "Nome do Perfume"]
@@ -170,13 +170,23 @@ if choice == "🔍 Pesquisar":
                     mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
                 result = result[mask].copy()
 
-    st.write(f"{len(result)} perfumes")
+    # --- AQUI É ONDE ENTRA A CORREÇÃO DA CONTAGEM E DO INDEX ---
+    
+    # 1. Limpa linhas fantasma que tenham o nome do perfume em branco
+    result = result[result["Nome do Perfume"].str.strip() != ""]
+    
+    # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
+    st.write(f"**{len(result)}** perfumes")
 
     if not df.empty:
+        # 3. Cria uma cópia para visualização e força o índice a começar em 1
+        df_visual = result.reset_index(drop=True)
+        df_visual.index = df_visual.index + 1  
+        
         edited_df = st.data_editor(
-            result.reset_index(drop=True),
+            df_visual, # <--- Usamos o df com o índice corrigido aqui
             use_container_width=True,
-            hide_index=True,
+            hide_index=False, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
             column_config={
                 "Editar": st.column_config.CheckboxColumn("", default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
