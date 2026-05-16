@@ -146,8 +146,8 @@ if choice == "🔍 Pesquisar":
         local_busca = st.selectbox("filtros", opcoes_busca)
         
     result = df.copy()
-    result.insert(0, "Editar", False)
 
+    # Filtros de pesquisa
     if search:
         if local_busca == "Notas Olfativas":
             t_padronizado = padronizar_texto(search)
@@ -170,45 +170,71 @@ if choice == "🔍 Pesquisar":
                     mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
                 result = result[mask].copy()
 
-    # --- AQUI É ONDE ENTRA A CORREÇÃO DA CONTAGEM E DO INDEX ---
-    
-    # 1. Limpa linhas fantasma que tenham o nome do perfume em branco
-    result = result[result["Nome do Perfume"].str.strip() != ""]
-    
-    # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
-    st.write(f"**{len(result)}** perfumes")
+    st.write(f"{len(result)} perfumes")
 
     if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
-        df_visual = result.reset_index(drop=True)
-        df_visual.index = df_visual.index + 1  
+        df_display = result.reset_index(drop=True)
         
+        # 1. Criamos um estado para controlar se o utilizador ativou o modo de edição na tabela
+        if "mostrar_editar" not in st.session_state:
+            st.session_state.mostrar_editar = False
+
+        # Definimos a lista base de colunas na ordem original
+        colunas_originais = ["Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"]
+        
+        # Se estiver ativo, a coluna "Editar" entra exatamente na primeira posição (índice 0)
+        if st.session_state.mostrar_editar:
+            df_display.insert(0, "Editar", False)
+            ordem_atual = ["Editar"] + colunas_originais
+        else:
+            ordem_atual = colunas_originais
+
+        # Configuração das colunas
+        config_colunas = {
+            "Ano": st.column_config.TextColumn("Ano", width=55),
+            "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
+            "Marca": st.column_config.TextColumn("Marca", width=120),
+            "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
+            "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
+            "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
+        }
+        
+        # Se a coluna estiver ativa, adicionamos a configuração do quadradinho
+        if st.session_state.mostrar_editar:
+            config_colunas["Editar"] = st.column_config.CheckboxColumn("", default=False, width=40)
+
         edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+            df_display,
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
-            column_config={
-                "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
-                "Ano": st.column_config.TextColumn("Ano", width=55),
-                "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
-                "Marca": st.column_config.TextColumn("Marca", width=120),
-                "Notas Olfativas": st.column_config.TextColumn("Notas Olfativas", width=220),
-                "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
-                "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
-            },
-            disabled=[c for c in result.columns if c != "Editar"]
+            hide_index=True,
+            column_order=ordem_atual, # Garante a ordem exata sem mover colunas de sítio
+            column_config=config_colunas,
+            disabled=[c for c in df_display.columns if c != "Editar"],
+            selection_mode="single_row", # O clique na linha serve de gatilho para fazer aparecer a coluna
+            key="tabela_dinamica"
         )
 
-        check_click = edited_df[edited_df["Editar"] == True]
-        if not check_click.empty:
-            st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+        # Gatilho 1: Se o utilizador clicar na linha, ativa a coluna "Editar" na primeira posição
+        selecao = st.session_state.tabela_dinamica.get("selection", {}).get("rows", [])
+        if selecao and not st.session_state.mostrar_editar:
+            st.session_state.mostrar_editar = True
             st.rerun()
+
+        # Gatilho 2: Se a coluna já está visível e o quadradinho for marcado, avança para a edição
+        if st.session_state.mostrar_editar and "Editar" in edited_df.columns:
+            check_click = edited_df[edited_df["Editar"] == True]
+            if not check_click.empty:
+                st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+                # Resetamos o estado para que na próxima pesquisa comece oculta outra vez
+                st.session_state.mostrar_editar = False 
+                st.rerun()
 
         if not result.empty:
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
-                csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
+                csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
