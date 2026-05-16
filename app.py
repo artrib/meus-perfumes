@@ -146,8 +146,11 @@ if choice == "🔍 Pesquisar":
         local_busca = st.selectbox("filtros", opcoes_busca)
         
     result = df.copy()
+    
+    # 1. Inserimos a coluna do quadradinho como já tinha antes
     result.insert(0, "Editar", False)
 
+    # Filtros de pesquisa
     if search:
         if local_busca == "Notas Olfativas":
             t_padronizado = padronizar_texto(search)
@@ -170,25 +173,31 @@ if choice == "🔍 Pesquisar":
                     mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
                 result = result[mask].copy()
 
-    # --- AQUI É ONDE ENTRA A CORREÇÃO DA CONTAGEM E DO INDEX ---
-    
-    # 1. Limpa linhas fantasma que tenham o nome do perfume em branco
-    result = result[result["Nome do Perfume"].str.strip() != ""]
-    
-    # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
-    st.write(f"**{len(result)}** perfumes")
+    st.write(f"{len(result)} perfumes")
 
     if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
-        df_visual = result.reset_index(drop=True)
-        df_visual.index = df_visual.index + 1  
+        # =========================================================
+        # CONTROLO DE VISIBILIDADE DA COLUNA "EDITAR"
+        # =========================================================
+        # Definimos todas as colunas disponíveis
+        todas_colunas = ["Editar", "Ano", "Nome do Perfume", "Marca", "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso", "Família Olfativa", "Perfumista"]
         
+        # Criamos um botão discreto tipo "toggle" (Olho) para ativar/desativar a coluna de edição
+        mostrar_coluna_editar = st.checkbox("👁️ Mostrar coluna de edição", value=False)
+        
+        # Se o "olho" não estiver ativo, removemos a coluna "Editar" da ordem de exibição
+        if not mostrar_coluna_editar:
+            colunas_visiveis = [c for c in todas_colunas if c != "Editar"]
+        else:
+            colunas_visiveis = todas_colunas
+
         edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+            result.reset_index(drop=True),
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True,
+            column_order=colunas_visiveis,  # <--- Aqui controlamos quais colunas aparecem
             column_config={
-                "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
+                "Editar": st.column_config.CheckboxColumn("", default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
@@ -199,16 +208,21 @@ if choice == "🔍 Pesquisar":
             disabled=[c for c in result.columns if c != "Editar"]
         )
 
-        check_click = edited_df[edited_df["Editar"] == True]
-        if not check_click.empty:
-            st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
-            st.rerun()
+        # Só processa o clique se a coluna estiver visível e houver seleção
+        if mostrar_coluna_editar and "Editar" in edited_df.columns:
+            check_click = edited_df[edited_df["Editar"] == True]
+            if not check_click.empty:
+                st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
+                st.rerun()
 
         if not result.empty:
             _, col_center, _ = st.columns([1, 2, 1])
             with col_center:
-                csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
+                # Removemos a coluna Editar do CSV para que o download vá limpo
+                df_download = result.drop(columns=["Editar"]) if "Editar" in result.columns else result
+                csv = df_download.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
