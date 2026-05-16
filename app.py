@@ -209,7 +209,6 @@ if choice == "🔍 Pesquisar":
             with col_center:
                 csv = result.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
-
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
