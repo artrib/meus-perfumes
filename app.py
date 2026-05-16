@@ -178,17 +178,28 @@ if choice == "🔍 Pesquisar":
     # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
     st.write(f"**{len(result)}** perfumes")
 
-    if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
+if not df.empty:
+        # 1. Cria a cópia para visualização e força o índice a começar em 1
         df_visual = result.reset_index(drop=True)
         df_visual.index = df_visual.index + 1  
         
+        # 2. DEFINIÇÃO DA ORDEM PADRÃO (O que aparece logo ao iniciar)
+        # Deixamos a coluna "Editar" FORA desta lista para que comece escondida.
+        # Como ela existe no DataFrame, o Streamlit coloca-a automaticamente no menu do "olho"!
+        colunas_visiveis_por_padrao = [
+            "Ano", "Nome do Perfume", "Marca", 
+            "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"
+        ]
+
         edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+            df_visual,
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True,  # Mantém o índice original oculto (podes ativar o novo de 1 a 192 no "olho")
+            column_order=colunas_visiveis_por_padrao, # <--- Esta linha faz a magia de esconder no início
             column_config={
-                "Editar": st.column_config.CheckboxColumn("", default=False),
+                # Configuramos o aspeto do quadradinho para quando ele for ativado no "olho"
+                "Editar": st.column_config.CheckboxColumn("", default=False, width=40),
+                
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
