@@ -205,11 +205,22 @@ if choice == " Pesquisar":
     # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
     st.write(f"**{len(result)}** perfumes")
 
-    edited_df = st.data_editor(
+if not df.empty:
+        # 3. Cria uma cópia para visualização e força o índice a começar em 1
+        df_visual = result.reset_index(drop=True)
+        df_visual.index = df_visual.index + 1  
+        
+        # Lista de controlo de visibilidade (Deixa a "Editar" oculta no "olho" no arranque)
+        colunas_visiveis_ao_inicio = [
+            "Ano", "Nome do Perfume", "Marca", 
+            "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"
+        ]
+        
+        edited_df = st.data_editor(
             df_visual,
             use_container_width=True,
             hide_index=True,
-            column_order=colunas_visiveis_ao_inicio, # <--- A reordenação entra aqui
+            column_order=colunas_visiveis_ao_inicio,
             column_config={
                 "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
@@ -221,6 +232,8 @@ if choice == " Pesquisar":
             },
             disabled=[c for c in result.columns if c != "Editar"]
         )
+
+        # --- AQUI ESTAVA O ERRO DE INDENTAÇÃO (Agora corrigido com 8 espaços exatos) ---
         check_click = edited_df[edited_df["Editar"] == True]
         if not check_click.empty:
             st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
