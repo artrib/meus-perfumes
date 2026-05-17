@@ -205,17 +205,13 @@ if choice == " Pesquisar":
     # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
     st.write(f"**{len(result)}** perfumes")
 
-    if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
-        df_visual = result.reset_index(drop=True)
-        df_visual.index = df_visual.index + 1  
-        
-        edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+edited_df = st.data_editor(
+            df_visual,
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True,
+            column_order=colunas_visiveis_ao_inicio, # <--- A reordenação entra aqui
             column_config={
-                "Editar": st.column_config.CheckboxColumn("edit", width=30, default=False),
+                "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
