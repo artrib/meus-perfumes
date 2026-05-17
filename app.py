@@ -222,7 +222,7 @@ if not df.empty:
             hide_index=True,
             column_order=colunas_visiveis_ao_inicio,
             column_config={
-                "Editar": st.column_config.CheckboxColumn("🖋️", width=35, default=False),
+                "Editar": st.column_config.CheckboxColumn("edit", width=30, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
