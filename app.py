@@ -46,7 +46,7 @@ st.markdown("""
 /* 1. Altera o texto das opções (Tamanho e Cor dinâmica do tema) */
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
 [data-testid="stSidebar"] .stRadio label p {
-    font-size: 25px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
+    font-size: 23px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
     font-weight: 600 !important;
     color: var(--text-color) !important; /* Branco no Dark, Preto no Light automaticamente */
 }
@@ -54,7 +54,7 @@ st.markdown("""
 /* 2. Círculo não selecionado (Borda externa) */
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] div:first-child {
     border-color: var(--text-color) !important;
-    opacity: 0.7;
+    opacity: 0.2;
 }
 
 /* 3. Círculo quando selecionado (Borda externa e a "bolinha" interior) */
