@@ -46,7 +46,7 @@ st.markdown("""
 /* 1. Altera o texto das opções (Tamanho e Cor dinâmica do tema) */
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
 [data-testid="stSidebar"] .stRadio label p {
-    font-size: 22px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
+    font-size: 25px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
     font-weight: 600 !important;
     color: var(--text-color) !important; /* Branco no Dark, Preto no Light automaticamente */
 }
