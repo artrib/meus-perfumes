@@ -205,7 +205,7 @@ if choice == " Pesquisar":
     # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
     st.write(f"**{len(result)}** perfumes")
 
-edited_df = st.data_editor(
+    edited_df = st.data_editor(
             df_visual,
             use_container_width=True,
             hide_index=True,
