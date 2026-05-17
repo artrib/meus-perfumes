@@ -54,7 +54,7 @@ st.markdown("""
 /* 2. Círculo não selecionado (Borda externa) */
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] div:first-child {
     border-color: var(--text-color) !important;
-    opacity: 0.2;
+    opacity: 0.9;
 }
 
 /* 3. Círculo quando selecionado (Borda externa e a "bolinha" interior) */
