@@ -210,7 +210,7 @@ if not df.empty:
         df_visual = result.reset_index(drop=True)
         df_visual.index = df_visual.index + 1  
         
-        # Lista de controlo de visibilidade (Deixa a "Editar" oculta no "olho" no arranque)
+        # Lista de controlo de visibilidade (Deixa a "edit" oculta no "olho" no arranque)
         colunas_visiveis_ao_inicio = [
             "Ano", "Nome do Perfume", "Marca", 
             "Notas Olfativas", "Estações do Ano", "Ocasiões de Uso"
@@ -222,7 +222,7 @@ if not df.empty:
             hide_index=True,
             column_order=colunas_visiveis_ao_inicio,
             column_config={
-                "Editar": st.column_config.CheckboxColumn("edit", width=30, default=False),
+                "edit": st.column_config.CheckboxColumn("edit", width=30, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
                 "Nome do Perfume": st.column_config.TextColumn("Nome do Perfume", width="medium"),
                 "Marca": st.column_config.TextColumn("Marca", width=120),
@@ -230,11 +230,11 @@ if not df.empty:
                 "Estações do Ano": st.column_config.TextColumn("Estações do Ano", width=120),
                 "Ocasiões de Uso": st.column_config.TextColumn("Ocasiões de Uso", width=120)
             },
-            disabled=[c for c in result.columns if c != "Editar"]
+            disabled=[c for c in result.columns if c != "edit"]
         )
 
         # --- AQUI ESTAVA O ERRO DE INDENTAÇÃO (Agora corrigido com 8 espaços exatos) ---
-        check_click = edited_df[edited_df["Editar"] == True]
+        check_click = edited_df[edited_df["edit"] == True]
         if not check_click.empty:
             st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
             st.rerun()
