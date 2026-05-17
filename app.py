@@ -221,7 +221,6 @@ if choice == " Pesquisar":
             },
             disabled=[c for c in result.columns if c != "Editar"]
         )
-
         check_click = edited_df[edited_df["Editar"] == True]
         if not check_click.empty:
             st.session_state.edit_perfume = check_click.iloc[0]["Nome do Perfume"]
