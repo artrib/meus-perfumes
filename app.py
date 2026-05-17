@@ -237,7 +237,7 @@ if choice == " Pesquisar":
                 csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
 # =========================================================
-# MODULO DE GRAFICOS 
+# MÓDULO DE GRÁFICOS 
 # =========================================================
         st.markdown("---")
         config_fixo = {'staticPlot': True}
@@ -247,15 +247,12 @@ if choice == " Pesquisar":
         with col1:
             # GRÁFICO 1: ESTAÇÕES
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
-            # Filtra vazios e padroniza para garantir que batam com a lista definida
+            # Filtra vazios e padroniza os dados textuais
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_est.columns = ["Estações do Ano", "count"]
             
-            # Define a ordem desejada das colunas conforme solicitado
-            ordem_estacoes = [
-                "Colonia", "Primavera", "Verao", "Pri/ver", 
-                "Meia-estacao", "Outono", "Inverno", "Out/inv", "Geral"
-            ]
+            # Correção da Ordem: Aplicar padronizar_texto na lista original de constantes para bater 100% com os dados
+            ordem_estacoes = [padronizar_texto(est) for est in ESTACOES_LISTA]
             
             fig1 = px.bar(
                 c_est, 
@@ -277,41 +274,22 @@ if choice == " Pesquisar":
             
             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
-            c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
+            # Tratamento robusto usando string methods do Pandas
+            c_oc = c_oc[c_oc != ""].str.upper().value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
-            
-            # Define a ordem desejada das colunas
-            ordem_desejada = [
-                "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
-                "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
-                "ESPECIAL", "GERAL"
-            ]
-            
-            fig5 = px.bar(
-                c_oc, 
-                x="Ocasiões", 
-                y="count", 
-                text="count", 
-                color_discrete_sequence=['#C08261'],
-                category_orders={"Ocasiões": ordem_desejada}
-            )
-            
+            fig5 = px.bar(c_oc, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'])
             fig5.update_traces(width=0.45, textposition='outside')
-            fig5.update_layout(
-                xaxis_title=None, 
-                yaxis_title=None, 
-                margin=dict(t=40, b=10), 
-                height=350
-            )
+            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+            # GRÁFICO: DIA E NOITE (Yin Yang)
             st.markdown("<br>", unsafe_allow_html=True)
             def classificar_periodo(row):
                 oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
                 dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
                 noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
                 
+                # Procura interseção para evitar falhas de correspondência parcial
                 if any(tag in oc for tag in dia_tags): return "DIA"
                 if any(tag in oc for tag in noite_tags): return "NOITE"
                 return "OUTROS"
@@ -321,16 +299,14 @@ if choice == " Pesquisar":
             df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
             df_pie.columns = ["Periodo", "count"]
             
-            # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#9cb7ba', '#141414'])
-            # Centralização via legenda abaixo e redução de tamanho
+            # Ajuste de cores e tamanho (Mantendo o conceito Yin Yang)
+            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#c7adc9', '#0d0000'])
             fig_yn.update_layout(
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
                 margin=dict(t=10, b=50, l=10, r=10), 
                 height=300 
             )
-            # Coluna centralizada para o gráfico
             col_left, col_donut, col_right = st.columns([1, 2, 1])
             with col_donut:
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
@@ -340,11 +316,10 @@ if choice == " Pesquisar":
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
-            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#94A684'])
+            fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#8EACCD'])
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
-        # Espaçamento aumentado
         st.markdown("<br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
@@ -357,14 +332,11 @@ if choice == " Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
-            # Adiciona um espaçamento antes do gráfico dos Perfumistas
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            
             # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#607274'])
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
 
@@ -373,11 +345,10 @@ if choice == " Pesquisar":
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
         c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
         c_marca.columns = ["Marca", "count"]
-        fig6 = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#cfbd9f'])
+        fig6 = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#607274'])
         fig6.update_traces(width=0.6, textposition='outside')
         fig6.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
-
 # =========================================================
 # ADICIONAR / EDITAR / APAGAR
 # =========================================================
