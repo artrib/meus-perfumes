@@ -333,7 +333,7 @@ if choice == " Pesquisar":
                 values='count', 
                 names='Periodo', 
                 hole=0.55, 
-                color_discrete_sequence=['#c7adc9', '#0d0000']
+                color_discrete_sequence=['#9cb7ba', '#141414']
             )
             
             # Configurações de layout, legenda e margens
