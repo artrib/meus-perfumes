@@ -305,7 +305,7 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-             # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+            # GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
             
             # 1. Definição das etiquetas correspondentes a cada período
@@ -341,7 +341,7 @@ if choice == " Pesquisar":
                 values='count', 
                 names='Periodo', 
                 hole=0.55, 
-                color_discrete_sequence=['#c7adc9', '#0d0000']
+                color_discrete_sequence=['#9cb7ba', '#141414']
             )
             
             # Configurações de layout, legenda e margens
