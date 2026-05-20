@@ -314,7 +314,6 @@ if choice == " Pesquisar":
                 
                 if any(tag in oc for tag in dia_tags): return "DIA"
                 if any(tag in oc for tag in noite_tags): return "NOITE"
-                return "OUTROS"
 
             df_temp = df.copy()
             df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
