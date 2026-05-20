@@ -307,30 +307,44 @@ if choice == " Pesquisar":
 
             # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
-            def classificar_periodo(row):
-                oc = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',')]
-                dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
-                noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
-                
-                if any(tag in oc for tag in dia_tags): return "DIA"
-                if any(tag in oc for tag in noite_tags): return "NOITE"
-                return "OUTROS"    
-
-            df_temp = df.copy()
-            df_temp["Periodo"] = df_temp.apply(classificar_periodo, axis=1)
-            df_pie = df_temp[df_temp["Periodo"].isin(["DIA", "NOITE"])]["Periodo"].value_counts().reset_index()
-            df_pie.columns = ["Periodo", "count"]
             
-            # Ajuste de cores e tamanho
-            fig_yn = px.pie(df_pie, values='count', names='Periodo', hole=0.55, color_discrete_sequence=['#9cb7ba', '#141414'])
-            # Centralização via legenda abaixo e redução de tamanho
+            # 1. Definição das etiquetas correspondentes a cada período
+            dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
+            noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
+
+            # 2. Explode e limpa todas as etiquetas de ocasiões da base de dados
+            ocasioes_explodidas = df["Ocasiões de Uso"].str.split(',').explode().str.strip().str.upper()
+
+            # 3. Função para rotular cada etiqueta individualmente
+            def rotular_etiqueta(tag):
+                if tag in dia_tags:
+                    return "DIA"
+                elif tag in noite_tags:
+                    return "NOITE"
+                return None
+
+            # 4. Aplica o mapeamento, remove nulos (como GERAL ou ESPECIAL) e faz a contagem
+            periodos_contagem = ocasioes_explodidas.map(rotular_etiqueta).dropna().value_counts().reset_index()
+            periodos_contagem.columns = ["Periodo", "count"]
+            
+            # 5. Construção do gráfico de rosca (mantendo a paleta original)
+            fig_yn = px.pie(
+                periodos_contagem, 
+                values='count', 
+                names='Periodo', 
+                hole=0.55, 
+                color_discrete_sequence=['#c7adc9', '#0d0000']
+            )
+            
+            # Configurações de layout, legenda e margens
             fig_yn.update_layout(
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
                 margin=dict(t=10, b=50, l=10, r=10), 
                 height=300 
             )
-            # Coluna centralizada para o gráfico
+            
+            # Renderização centralizada dentro da coluna do Streamlit
             col_left, col_donut, col_right = st.columns([1, 2, 1])
             with col_donut:
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
