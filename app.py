@@ -305,35 +305,43 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
+             # NOVO GRÁFICO: DIA E NOITE (Ying Yang)
             st.markdown("<br>", unsafe_allow_html=True)
             
             # 1. Definição das etiquetas correspondentes a cada período
             dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
             noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
 
-            # 2. Explode e limpa todas as etiquetas de ocasiões da base de dados
-            ocasioes_explodidas = df["Ocasiões de Uso"].str.split(',').explode().str.strip().str.upper()
+            # 2. Listas para armazenar as contagens finais (máximo 1 por perfume)
+            total_dia = 0
+            total_noite = 0
 
-            # 3. Função para rotular cada etiqueta individualmente
-            def rotular_etiqueta(tag):
-                if tag in dia_tags:
-                    return "DIA"
-                elif tag in noite_tags:
-                    return "NOITE"
-                return None
+            # 3. Varremos a base de dados linha a linha (perfume a perfume)
+            for _, row in df.iterrows():
+                # Limpamos e padronizamos as ocasiões do perfume atual
+                ocasioes = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',') if o.strip()]
+                
+                # Verifica se o perfume tem pelo menos uma etiqueta de DIA
+                if any(tag in ocasioes for tag in dia_tags):
+                    total_dia += 1
+                
+                # Verifica se o perfume tem pelo menos uma etiqueta de NOITE
+                if any(tag in ocasioes for tag in noite_tags):
+                    total_noite += 1
 
-            # 4. Aplica o mapeamento, remove nulos (como GERAL ou ESPECIAL) e faz a contagem
-            periodos_contagem = ocasioes_explodidas.map(rotular_etiqueta).dropna().value_counts().reset_index()
-            periodos_contagem.columns = ["Periodo", "count"]
+            # 4. Montamos o DataFrame para o Plotly com os totais consolidados
+            df_pie = pd.DataFrame({
+                "Periodo": ["DIA", "NOITE"],
+                "count": [total_dia, total_noite]
+            })
             
             # 5. Construção do gráfico de rosca (mantendo a paleta original)
             fig_yn = px.pie(
-                periodos_contagem, 
+                df_pie, 
                 values='count', 
                 names='Periodo', 
                 hole=0.55, 
-                color_discrete_sequence=['#9cb7ba', '#141414']
+                color_discrete_sequence=['#c7adc9', '#0d0000']
             )
             
             # Configurações de layout, legenda e margens
