@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import sqlite3
 import os
 import unicodedata
 import plotly.express as px
@@ -14,7 +15,6 @@ if "edit_perfume" not in st.session_state:
 # =========================================================
 # CONFIGURAÇÃO DA PÁGINA
 # =========================================================
-
 st.set_page_config(
     page_title="Gestão de Perfumes",
     layout="wide",
@@ -24,7 +24,6 @@ st.set_page_config(
 # =========================================================
 # CSS PERSONALIZADO (Adaptável a Light/Dark Mode)
 # =========================================================
-
 st.markdown("""
 <style>
 .block-container {
@@ -42,31 +41,26 @@ st.markdown("""
 }
 
 /* --- CUSTOMIZAÇÃO DO RADIO MENU (SIDEBAR) --- */
-
-/* 1. Altera o texto das opções (Tamanho e Cor dinâmica do tema) */
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
 [data-testid="stSidebar"] .stRadio label p {
-    font-size: 23px !important; /* Ajuste aqui o tamanho se quiser maior/menor */
+    font-size: 23px !important;
     font-weight: 600 !important;
-    color: var(--text-color) !important; /* Branco no Dark, Preto no Light automaticamente */
+    color: var(--text-color) !important;
 }
 
-/* 2. Círculo não selecionado (Borda externa) */
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] div:first-child {
     border-color: var(--text-color) !important;
     opacity: 0.9;
 }
 
-/* 3. Círculo quando selecionado (Borda externa e a "bolinha" interior) */
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] input:checked + div {
     border-color: var(--text-color) !important;
 }
 
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"] input:checked + div ::before {
-    background-color: var(--text-color) !important; /* Bolinha interna segue a cor do texto do tema */
+    background-color: var(--text-color) !important;
 }
 
-/* Ajuste fino para garantir que o hover/foco do rádio não quebre as cores */
 [data-testid="stSidebar"] [data-fieldname="stRadio"] div[role="radiogroup"] div[data-id="stRadioOption"]:hover div {
     border-color: var(--text-color) !important;
 }
@@ -74,10 +68,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# CONSTANTES
+# CONSTANTES E INICIALIZAÇÃO DO SQLITE
 # =========================================================
-
-DB_FILE = "perfumes_data.csv"
+DB_FILE = "perfumes.db"
 
 ESTACOES_LISTA = [
     "COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", 
@@ -89,10 +82,31 @@ OCASIOES_OPCOES = [
     "TRABALHO OUT/INV", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
 ]
 
+def init_db():
+    """Inicializa a base de dados SQLite e cria a tabela se não existir."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS perfumes (
+            ano TEXT,
+            nome_perfume TEXT PRIMARY KEY,
+            estacoes TEXT,
+            ocasioes TEXT,
+            familia TEXT,
+            notas TEXT,
+            marca TEXT,
+            perfumista TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# Inicializa o banco de dados
+init_db()
+
 # =========================================================
 # FUNÇÕES DE TRATAMENTO DE TEXTO
 # =========================================================
-
 def remover_acentos(texto):
     if not isinstance(texto, str):
         texto = str(texto)
@@ -110,50 +124,32 @@ def padronizar_texto(texto):
     return texto_limpo.capitalize()
 
 def load_data():
-    cols = ["Ano", "Nome do Perfume", "Estações do Ano", "Ocasiões de Uso", 
-            "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
-    if os.path.exists(DB_FILE):
-        try:
-            # O 'sep=None' faz o pandas detectar se é vírgula ou ponto e vírgula
-            # O 'engine=python' é necessário para usar a detecção automática
-            df = pd.read_csv(DB_FILE, encoding='utf-8-sig', sep=None, engine='python')
-            
-            df.columns = df.columns.str.strip()
-            
-            # Garante que todas as colunas necessárias existam
-            for col in cols:
-                if col not in df.columns:
-                    df[col] = ""
-            
-            # --- CORREÇÃO DO ANO ---
-            df["Ano"] = pd.to_numeric(df["Ano"], errors='coerce')
-            df["Ano"] = df["Ano"].apply(lambda x: str(int(x)) if pd.notnull(x) else "")
-
-            # REMOVE NOMES DE PERFUMES DIPLICADOS:
-            df = df.drop_duplicates(subset=["Nome do Perfume"], keep='first')
-
-            return df.fillna("").astype(str)[cols]
-        except Exception as e:
-            st.error(f"Erro ao carregar CSV: {e}")
-            return pd.DataFrame(columns=cols)
-    return pd.DataFrame(columns=cols)
+    """Carrega os dados do SQLite para um DataFrame mapeando os nomes das colunas."""
+    conn = sqlite3.connect(DB_FILE)
+    query = "SELECT ano, nome_perfume, estacoes, ocasioes, familia, notas, marca, perfumista FROM perfumes"
+    df_sql = pd.read_sql_query(query, conn)
+    conn.close()
+    
+    # Mapeia os nomes das colunas para manter a compatibilidade com os gráficos e tabelas existentes
+    df_sql.columns = ["Ano", "Nome do Perfume", "Estações do Ano", "Ocasiões de Uso", 
+                      "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
+    
+    # Garante que os valores nulos sejam strings vazias
+    return df_sql.fillna("").astype(str)
 
 # =========================================================
 # CARREGAR DADOS
 # =========================================================
-
 df = load_data()
 
 # =========================================================
 # TÍTULO
 # =========================================================
-
 st.markdown("<h2 style='text-align:left; font-size:37px; color: var(--text-color);'>Caixa dos Perfumes</h2>", unsafe_allow_html=True)
 
 # =========================================================
 # MENU
 # =========================================================
-
 menu = [" Pesquisar", " Adicionar", " Editar", " Apagar"]
 default_index = 2 if st.session_state.edit_perfume else 0
 choice = st.sidebar.radio("", menu, index=default_index)
@@ -161,16 +157,15 @@ choice = st.sidebar.radio("", menu, index=default_index)
 # =========================================================
 # 1. PESQUISAR E ESTATÍSTICAS
 # =========================================================
-
 if choice == " Pesquisar":
     col_busca, col_filtro = st.columns([3, 1])
     
     with col_busca:
-        search = st.text_input("pesquisa", placeholder="🔍")
+        search = st.text_input("pesquisa", placeholder="🔍", label_visibility="collapsed")
     
     with col_filtro:
         opcoes_busca = ["Tudo", "Notas Olfativas", "Família Olfativa", "Estações do Ano", "Ocasiões de Uso", "Perfumista", "Marca", "Nome do Perfume"]
-        local_busca = st.selectbox("filtros", opcoes_busca)
+        local_busca = st.selectbox("filtros", opcoes_busca, label_visibility="collapsed")
         
     result = df.copy()
     result.insert(0, "Editar", False)
@@ -197,23 +192,19 @@ if choice == " Pesquisar":
                     mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
                 result = result[mask].copy()
 
-    # --- AQUI É ONDE ENTRA A CORREÇÃO DA CONTAGEM E DO INDEX ---
-    
-    # 1. Limpa linhas fantasma que tenham o nome do perfume em branco
+    # Limpa linhas fantasma que tenham o nome do perfume em branco
     result = result[result["Nome do Perfume"].str.strip() != ""]
     
-    # 2. Mostra o total real (vai passar a dizer 192 em vez de 193)
     st.write(f"**{len(result)}** perfumes")
 
     if not df.empty:
-        # 3. Cria uma cópia para visualização e força o índice a começar em 1
         df_visual = result.reset_index(drop=True)
         df_visual.index = df_visual.index + 1  
         
         edited_df = st.data_editor(
-            df_visual, # <--- Usamos o df com o índice corrigido aqui
+            df_visual,
             use_container_width=True,
-            hide_index=True, # <--- Se queres ver os números de 1 a 192 na tabela, deixa False. Se não queres ver números nenhuns, muda para True.
+            hide_index=True,
             column_config={
                 "Editar": st.column_config.CheckboxColumn("edit", width=30, default=False),
                 "Ano": st.column_config.TextColumn("Ano", width=55),
@@ -236,6 +227,7 @@ if choice == " Pesquisar":
             with col_center:
                 csv = result.drop(columns=["Editar"]).to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 Download (CSV)", data=csv, file_name="meus_perfumes.csv", mime="text/csv", use_container_width=True)
+
 # =========================================================
 # MODULO DE GRAFICOS 
 # =========================================================
@@ -247,11 +239,9 @@ if choice == " Pesquisar":
         with col1:
             # GRÁFICO 1: ESTAÇÕES
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
-            # Filtra vazios e padroniza para garantir que batam com a lista definida
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_est.columns = ["Estações do Ano", "count"]
             
-            # Define a ordem desejada das colunas conforme solicitado
             ordem_estacoes = [
                 "Colonia", "Primavera", "Verao", "Pri/ver", 
                 "Meia-estacao", "Out/inv", "Inverno", "Outono", "Geral"
@@ -265,14 +255,8 @@ if choice == " Pesquisar":
                 color_discrete_sequence=['#B0A695'],
                 category_orders={"Estações do Ano": ordem_estacoes}
             )
-            
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(
-                xaxis_title=None, 
-                yaxis_title=None, 
-                margin=dict(t=20, b=10), 
-                height=350
-            )
+            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # GRÁFICO 5: OCASIÕES DE USO
@@ -280,7 +264,6 @@ if choice == " Pesquisar":
             c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
             
-            # Define a ordem desejada das colunas
             ordem_desejada = [
                 "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
                 "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
@@ -295,47 +278,30 @@ if choice == " Pesquisar":
                 color_discrete_sequence=['#C08261'],
                 category_orders={"Ocasiões": ordem_desejada}
             )
-            
             fig5.update_traces(width=0.45, textposition='outside')
-            fig5.update_layout(
-                xaxis_title=None, 
-                yaxis_title=None, 
-                margin=dict(t=40, b=10), 
-                height=350
-            )
+            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
-            # GRÁFICO: DIA E NOITE (Ying Yang)
+            # GRÁFICO: DIA E NOITE
             st.markdown("<br>", unsafe_allow_html=True)
-            
-            # 1. Definição das etiquetas correspondentes a cada período
             dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
             noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
 
-            # 2. Listas para armazenar as contagens finais (máximo 1 por perfume)
             total_dia = 0
             total_noite = 0
 
-            # 3. Varremos a base de dados linha a linha (perfume a perfume)
             for _, row in df.iterrows():
-                # Limpamos e padronizamos as ocasiões do perfume atual
                 ocasioes = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',') if o.strip()]
-                
-                # Verifica se o perfume tem pelo menos uma etiqueta de DIA
                 if any(tag in ocasioes for tag in dia_tags):
                     total_dia += 1
-                
-                # Verifica se o perfume tem pelo menos uma etiqueta de NOITE
                 if any(tag in ocasioes for tag in noite_tags):
                     total_noite += 1
 
-            # 4. Montamos o DataFrame para o Plotly com os totais consolidados
             df_pie = pd.DataFrame({
                 "Periodo": ["DIA", "NOITE"],
                 "count": [total_dia, total_noite]
             })
             
-            # 5. Construção do gráfico de rosca (mantendo a paleta original)
             fig_yn = px.pie(
                 df_pie, 
                 values='count', 
@@ -343,8 +309,6 @@ if choice == " Pesquisar":
                 hole=0.55, 
                 color_discrete_sequence=['#9cb7ba', '#141414']
             )
-            
-            # Configurações de layout, legenda e margens
             fig_yn.update_layout(
                 showlegend=True, 
                 legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
@@ -352,7 +316,6 @@ if choice == " Pesquisar":
                 height=300 
             )
             
-            # Renderização centralizada dentro da coluna do Streamlit
             col_left, col_donut, col_right = st.columns([1, 2, 1])
             with col_donut:
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
@@ -366,7 +329,6 @@ if choice == " Pesquisar":
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
 
-        # Espaçamento aumentado
         st.markdown("<br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
@@ -379,9 +341,7 @@ if choice == " Pesquisar":
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
         with col4:
-            # Adiciona um espaçamento antes do gráfico dos Perfumistas
             st.markdown("<br><br>", unsafe_allow_html=True)
-            
             # GRÁFICO 4: PERFUMISTAS
             c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
             c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
@@ -401,9 +361,8 @@ if choice == " Pesquisar":
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
 # =========================================================
-# ADICIONAR / EDITAR / APAGAR
+# ADICIONAR
 # =========================================================
-
 elif choice == " Adicionar":
     st.subheader("Novo Registo")
     with st.form("add"):
@@ -423,33 +382,31 @@ elif choice == " Adicionar":
             if not nome:
                 st.warning("O nome do perfume é obrigatório!")
             else:
-                # Lógica de processamento
                 fam_clean = ", ".join([padronizar_texto(f) for f in fam.replace('/', ',').split(',') if f.strip()])
                 notas_clean = ", ".join([padronizar_texto(n) for n in notas.split(',') if n.strip()])
                 perf_clean = padronizar_texto(perf)
                 
-                new = pd.DataFrame([{
-                    "Ano": ano, "Nome do Perfume": nome, "Estações do Ano": ", ".join(est),
-                    "Ocasiões de Uso": ", ".join(oc), "Família Olfativa": fam_clean,
-                    "Notas Olfativas": notas_clean, "Marca": marca, "Perfumista": perf_clean
-                }])
+                # Inserção no SQLite com tratamento de duplicados (INSERT OR IGNORE)
+                conn = sqlite3.connect(DB_FILE)
+                cursor = conn.cursor()
+                try:
+                    cursor.execute("""
+                        INSERT INTO perfumes (ano, nome_perfume, estacoes, ocasioes, familia, notas, marca, perfumista)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (ano, nome.strip(), ", ".join(est), ", ".join(oc), fam_clean, notas_clean, marca.strip(), perf_clean))
+                    conn.commit()
+                    st.toast("PERFUME SALVO COM SUCESSO", icon="✅")
+                except sqlite3.IntegrityError:
+                    st.error(f"Já existe um perfume registado com o nome '{nome}'.")
+                finally:
+                    conn.close()
                 
-                # Atualiza o CSV
-                df = pd.concat([df, new], ignore_index=True)
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                
-                # --- LOGICA DE RESET ---
-                # Define a página de destino para o próximo carregamento
-                st.session_state.menu_choice = "🔍 Pesquisar"
-                
-                # Feedback de sucesso
-                st.toast("PERFUME SALVO COM SUCESSO", icon="✅")
                 time.sleep(2) 
-                
-                # O rerun() forçará o Streamlit a ler o topo do código, 
-                # onde o radio lerá o novo valor do session_state.menu_choice
                 st.rerun()
 
+# =========================================================
+# EDITAR
+# =========================================================
 elif choice == " Editar":
     st.subheader("Editar")
     if not df.empty:
@@ -459,58 +416,40 @@ elif choice == " Editar":
             idx_default = lista_perfumes.index(st.session_state.edit_perfume)
         
         sel = st.selectbox("Selecione:", lista_perfumes, index=idx_default)
-        idx = df[df["Nome do Perfume"] == sel].index[0]
-        at_oc = [x.strip() for x in str(df.at[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
-        at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
+        
+        # Procura os dados atuais baseados no nome selecionado
+        perfume_dados = df[df["Nome do Perfume"] == sel].iloc[0]
+        
+        at_oc = [x.strip() for x in str(perfume_dados["Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
+        at_est = [x.strip() for x in str(perfume_dados["Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
 
         with st.form("edit"):
             c1, c2 = st.columns(2)
             with c1:
-                e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
-                e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
+                e_n = st.text_input("Nome", value=perfume_dados["Nome do Perfume"])
+                e_m = st.text_input("Marca", value=perfume_dados["Marca"])
                 e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
                 e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
             with c2:
-                e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
-                e_p = st.text_input("Perfumista", value=df.at[idx, "Perfumista"])
-                e_a = st.text_input("Ano", value=df.at[idx, "Ano"])
-                e_not = st.text_area("Notas", value=df.at[idx, "Notas Olfativas"])
+                e_f = st.text_input("Família", value=perfume_dados["Família Olfativa"])
+                e_p = st.text_input("Perfumista", value=perfume_dados["Perfumista"])
+                e_a = st.text_input("Ano", value=perfume_dados["Ano"])
+                e_not = st.text_area("Notas", value=perfume_dados["Notas Olfativas"])
 
             if st.form_submit_button("Atualizar"):
                 fam_edit = ", ".join([padronizar_texto(f) for f in e_f.replace('/', ',').split(',') if f.strip()])
                 notas_edit = ", ".join([padronizar_texto(n) for n in e_not.split(',') if n.strip()])
-                df.loc[idx] = [e_a, e_n, ", ".join(e_e), ", ".join(e_oc), fam_edit, notas_edit, e_m, padronizar_texto(e_p)]
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
+                
+                # Executa o UPDATE no SQLite com base no nome original selecionado (sel)
+                conn = sqlite3.connect(DB_FILE)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE perfumes 
+                    SET ano = ?, nome_perfume = ?, estacoes = ?, ocasioes = ?, familia = ?, notas = ?, marca = ?, perfumista = ?
+                    WHERE nome_perfume = ?
+                """, (e_a, e_n.strip(), ", ".join(e_e), ", ".join(e_oc), fam_edit, notas_edit, e_m.strip(), padronizar_texto(e_p), sel))
+                conn.commit()
+                conn.close()
+                
                 st.session_state.edit_perfume = None
-                st.success("Atualizado!")
-                st.rerun()
-
-elif choice == " Apagar":
-    st.subheader("Eliminar")
-    if not df.empty:
-        p_del = st.selectbox("Selecione o perfume para eliminar:", sorted(df["Nome do Perfume"].unique().tolist()))
-        
-        # Cria um espaço para a confirmação
-        if st.button("Eliminar este perfume"):
-            st.session_state.confirmar_delete = p_del
-        
-        # Verifica se o pedido de delete foi feito
-        if "confirmar_delete" in st.session_state and st.session_state.confirmar_delete == p_del:
-            st.warning(f"Tem a certeza que deseja eliminar '{p_del}'? Esta ação é irreversível.")
-            
-            col_sim, col_nao = st.columns(2)
-            if col_sim.button("Sim, eliminar"):
-                # Realiza a exclusão
-                df = df[df["Nome do Perfume"] != p_del]
-                df.to_csv(DB_FILE, index=False, encoding='utf-8-sig')
-                st.success(f"'{p_del}' eliminado com sucesso.")
-                # Limpa o estado
-                del st.session_state.confirmar_delete
-                st.rerun()
-            
-            if col_nao.button("Cancelar"):
-                del st.session_state.confirmar_delete
-                st.rerun()
-
-
-    
+                st.success("Atua
