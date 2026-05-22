@@ -241,31 +241,161 @@ if choice == " Pesquisar":
         col1, col2 = st.columns(2)
 
         with col1:
+            # GRÁFICO 1: ESTAÇÕES
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
+            # Filtra vazios e padroniza para garantir que batam com a lista definida
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_est.columns = ["Estações do Ano", "count"]
-            ordem_estacoes = ["Colonia", "Primavera", "Verao", "Pri/ver", "Meia-estacao", "Out/inv", "Inverno", "Outono", "Geral"]
-            fig1 = px.bar(c_est, x="Estações do Ano", y="count", text="count", color_discrete_sequence=['#B0A695'], category_orders={"Estações do Ano": ordem_estacoes})
+            
+            # Define a ordem desejada das colunas conforme solicitado
+            ordem_estacoes = [
+                "Colonia", "Primavera", "Verao", "Pri/ver", 
+                "Meia-estacao", "Out/inv", "Inverno", "Outono", "Geral"
+            ]
+            
+            fig1 = px.bar(
+                c_est, 
+                x="Estações do Ano", 
+                y="count", 
+                text="count", 
+                color_discrete_sequence=['#B0A695'],
+                category_orders={"Estações do Ano": ordem_estacoes}
+            )
+            
             fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=350)
+            fig1.update_layout(
+                xaxis_title=None, 
+                yaxis_title=None, 
+                margin=dict(t=20, b=10), 
+                height=350
+            )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
+            # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
-            ordem_desejada = ["CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", "ESPECIAL", "GERAL"]
-            fig5 = px.bar(c_oc, x="Ocasiões", y="count", text="count", color_discrete_sequence=['#C08261'], category_orders={"Ocasiões": ordem_desejada})
+            
+            # Define a ordem desejada das colunas
+            ordem_desejada = [
+                "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
+                "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
+                "ESPECIAL", "GERAL"
+            ]
+            
+            fig5 = px.bar(
+                c_oc, 
+                x="Ocasiões", 
+                y="count", 
+                text="count", 
+                color_discrete_sequence=['#C08261'],
+                category_orders={"Ocasiões": ordem_desejada}
+            )
+            
             fig5.update_traces(width=0.45, textposition='outside')
-            fig5.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=40, b=10), height=350)
+            fig5.update_layout(
+                xaxis_title=None, 
+                yaxis_title=None, 
+                margin=dict(t=40, b=10), 
+                height=350
+            )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
 
+            # GRÁFICO: DIA E NOITE (Ying Yang)
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # 1. Definição das etiquetas correspondentes a cada período
+            dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
+            noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
+
+            # 2. Listas para armazenar as contagens finais (máximo 1 por perfume)
+            total_dia = 0
+            total_noite = 0
+
+            # 3. Varremos a base de dados linha a linha (perfume a perfume)
+            for _, row in df.iterrows():
+                # Limpamos e padronizamos as ocasiões do perfume atual
+                ocasioes = [o.strip().upper() for o in str(row["Ocasiões de Uso"]).split(',') if o.strip()]
+                
+                # Verifica se o perfume tem pelo menos uma etiqueta de DIA
+                if any(tag in ocasioes for tag in dia_tags):
+                    total_dia += 1
+                
+                # Verifica se o perfume tem pelo menos uma etiqueta de NOITE
+                if any(tag in ocasioes for tag in noite_tags):
+                    total_noite += 1
+
+            # 4. Montamos o DataFrame para o Plotly com os totais consolidados
+            df_pie = pd.DataFrame({
+                "Periodo": ["DIA", "NOITE"],
+                "count": [total_dia, total_noite]
+            })
+            
+            # 5. Construção do gráfico de rosca (mantendo a paleta original)
+            fig_yn = px.pie(
+                df_pie, 
+                values='count', 
+                names='Periodo', 
+                hole=0.55, 
+                color_discrete_sequence=['#9cb7ba', '#141414']
+            )
+            
+            # Configurações de layout, legenda e margens
+            fig_yn.update_layout(
+                showlegend=True, 
+                legend=dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5), 
+                margin=dict(t=10, b=50, l=10, r=10), 
+                height=300 
+            )
+            
+            # Renderização centralizada dentro da coluna do Streamlit
+            col_left, col_donut, col_right = st.columns([1, 2, 1])
+            with col_donut:
+                st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
+
         with col2:
+            # GRÁFICO 2: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
             fig2 = px.bar(c_not, x="count", y="Notas Olfativas", orientation='h', text="count", color_discrete_sequence=['#94A684'])
             fig2.update_layout(yaxis={'categoryorder': 'total ascending'}, height=750, margin=dict(t=20, b=10), xaxis_title=None, yaxis_title=None)
             st.plotly_chart(fig2, use_container_width=True, config=config_fixo)
+
+        # Espaçamento aumentado
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        col3, col4 = st.columns(2)
+        with col3:
+            
+            # GRÁFICO 3: FAMÍLIA
+            f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
+            c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
+            c_fam.columns = ["Família Olfativa", "count"]
+            fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
+            st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
+
+        with col4:
+            # Adiciona um espaçamento antes do gráfico dos Perfumistas
+            st.markdown("<br><br>", unsafe_allow_html=True)
+            
+            # GRÁFICO 4: PERFUMISTAS
+            c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
+            c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
+            c_perf.columns = ["Perfumista", "count"]
+            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#607274'])
+            fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
+            st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
+
+        # GRÁFICO 6: MARCAS
+        st.markdown("---")
+        c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
+        c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
+        c_marca.columns = ["Marca", "count"]
+        fig6 = px.bar(c_marca, x="Marca", y="count", text="count", color_discrete_sequence=['#cfbd9f'])
+        fig6.update_traces(width=0.6, textposition='outside')
+        fig6.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
+        st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
 # =========================================================
 # ADICIONAR / EDITAR / APAGAR
