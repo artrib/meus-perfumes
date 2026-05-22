@@ -5,9 +5,6 @@ import os
 import unicodedata
 import plotly.express as px
 import time
-import os
-os.system("python migrar.py")
-
 
 # =========================================================
 # GESTÃO DE ESTADO (Para Edição Direta)
