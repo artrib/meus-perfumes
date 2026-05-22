@@ -132,20 +132,20 @@ def padronizar_texto(texto):
     return texto_limpo.capitalize()
 
 def load_data():
-    cols = ["Ano", "Nome do Perfume", "Estações do Ano", "Ocasiões de Uso", 
-            "Família Olfativa", "Notas Olfativas", "Marca", "Perfumista"]
-    if os.path.exists(DB_FILE):
-        try:
-            # O 'sep=None' faz o pandas detectar se é vírgula ou ponto e vírgula
-            # O 'engine=python' é necessário para usar a detecção automática
-            df = pd.read_csv(DB_FILE, encoding='utf-8-sig', sep=None, engine='python')
-            
-            df.columns = df.columns.str.strip()
-            
-            # Garante que todas as colunas necessárias existam
-            for col in cols:
-                if col not in df.columns:
-                    df[col] = ""
+    cols_mapping = {
+        "ano": "Ano", "nome_perfume": "Nome do Perfume", "estacoes_ano": "Estações do Ano",
+        "ocasioes_uso": "Ocasiões de Uso", "familia_olfativa": "Família Olfativa",
+        "notas_olfativas": "Notas Olfativas", "marca": "Marca", "perfumista": "Perfumista"
+    }
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        df = pd.read_sql_query(f"SELECT {', '.join(cols_mapping.keys())} FROM perfumes", conn)
+        conn.close()
+        df = df.rename(columns=cols_mapping)
+        return df.fillna("").astype(str)
+    except Exception as e:
+        st.error(f"Erro ao carregar base de dados: {e}")
+        return pd.DataFrame(columns=list(cols_mapping.values()))
             
             # --- CORREÇÃO DO ANO ---
             df["Ano"] = pd.to_numeric(df["Ano"], errors='coerce')
