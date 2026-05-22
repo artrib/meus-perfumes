@@ -433,25 +433,32 @@ elif choice == " Adicionar":
 elif choice == " Editar":
     st.subheader("Editar")
     if not df.empty:
-        lista = sorted(df["Nome do Perfume"].unique().tolist())
-        sel = st.selectbox("Selecione:", lista, index=lista.index(st.session_state.edit_perfume) if st.session_state.edit_perfume in lista else 0)
-        p_data = df[df["Nome do Perfume"] == sel].iloc[0]
+        lista_perfumes = sorted(df["Nome do Perfume"].unique().tolist())
+        idx_default = 0
+        if st.session_state.edit_perfume in lista_perfumes:
+            idx_default = lista_perfumes.index(st.session_state.edit_perfume)
         
+        sel = st.selectbox("Selecione:", lista_perfumes, index=idx_default)
+        idx = df[df["Nome do Perfume"] == sel].index[0]
+        at_oc = [x.strip() for x in str(df.at[idx, "Ocasiões de Uso"]).split(",") if x.strip() in OCASIOES_OPCOES]
+        at_est = [x.strip() for x in str(df.at[idx, "Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA]
+
         with st.form("edit"):
             c1, c2 = st.columns(2)
             with c1:
-                e_n = st.text_input("Nome", value=p_data["Nome do Perfume"])
-                e_m = st.text_input("Marca", value=p_data["Marca"])
-                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=[x.strip() for x in str(p_data["Estações do Ano"]).split(",") if x.strip() in ESTACOES_LISTA])
+                e_n = st.text_input("Nome", value=df.at[idx, "Nome do Perfume"])
+                e_m = st.text_input("Marca", value=df.at[idx, "Marca"])
+                e_e = st.multiselect("Estações", ESTACOES_LISTA, default=at_est)
+                e_oc = st.multiselect("Ocasiões", OCASIOES_OPCOES, default=at_oc)
             with c2:
-                e_f = st.text_input("Família", value=p_data["Família Olfativa"])
-                e_p = st.text_input("Perfumista", value=p_data["Perfumista"])
-                e_a = st.text_input("Ano", value=p_data["Ano"])
-                e_not = st.text_area("Notas", value=p_data["Notas Olfativas"])
+                e_f = st.text_input("Família", value=df.at[idx, "Família Olfativa"])
+                e_p = st.text_input("Perfumista", value=df.at[idx, "Perfumista"])
+                e_a = st.text_input("Ano", value=df.at[idx, "Ano"])
+                e_not = st.text_area("Notas", value=df.at[idx, "Notas Olfativas"])
 
             if st.form_submit_button("Atualizar"):
                 conn = sqlite3.connect(DB_NAME); cursor = conn.cursor()
-                cursor.execute("UPDATE perfumes SET ano=?, nome_perfume=?, estacoes_ano=?, familia_olfativa=?, notas_olfativas=?, marca=?, perfumista=? WHERE nome_perfume=?",
+                cursor.execute("UPDATE perfumes SET ano=?, nome_perfume=?, estacoes_ano=?, ocasioes_uso=?, familia_olfativa=?, notas_olfativas=?, marca=?, perfumista=? WHERE nome_perfume=?",
                     (e_a, e_n, ", ".join(e_e), e_f, e_not, e_m, e_p, sel))
                 conn.commit(); conn.close()
                 st.session_state.edit_perfume = None; st.success("Atualizado!"); time.sleep(1); st.rerun()
