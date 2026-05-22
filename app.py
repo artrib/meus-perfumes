@@ -452,4 +452,38 @@ elif choice == " Editar":
                 conn.close()
                 
                 st.session_state.edit_perfume = None
-                st.success("Atua
+                st.success("Atualizado!")
+                st.rerun()
+
+# =========================================================
+# APAGAR
+# =========================================================
+elif choice == " Apagar":
+    st.subheader("Eliminar")
+    if not df.empty:
+        p_del = st.selectbox("Selecione o perfume para eliminar:", sorted(df["Nome do Perfume"].unique().tolist()))
+        
+        if st.button("Eliminar este perfume"):
+            st.session_state.confirmar_delete = p_del
+        
+        if "confirmar_delete" in st.session_state and st.session_state.confirmar_delete == p_del:
+            st.warning(f"Tem a certeza que deseja eliminar '{p_del}'? Esta ação é irreversível.")
+            
+            col_sim, col_nao = st.columns(2)
+            if col_sim.button("Sim, eliminar"):
+                # Executa o DELETE na base de dados
+                conn = sqlite3.connect(DB_FILE)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM perfumes WHERE nome_perfume = ?", (p_del,))
+                conn.commit()
+                conn.close()
+                
+                st.success(f"'{p_del}' eliminado com sucesso.")
+                if "confirmar_delete" in st.session_state:
+                    del st.session_state.confirmar_delete
+                st.rerun()
+            
+            if col_nao.button("Cancelar"):
+                if "confirmar_delete" in st.session_state:
+                    del st.session_state.confirmar_delete
+                st.rerun()
