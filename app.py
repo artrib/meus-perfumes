@@ -75,10 +75,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# CONSTANTES
+# CONSTANTES E BASE DE DADOS
 # =========================================================
 
-DB_FILE = "perfumes_data.csv"
+DB_NAME = "perfumes.db"
 
 ESTACOES_LISTA = [
     "COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER", 
@@ -90,6 +90,27 @@ OCASIOES_OPCOES = [
     "TRABALHO OUT/INV", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
 ]
 
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS perfumes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ano TEXT,
+            nome_perfume TEXT NOT NULL UNIQUE,
+            estacoes_ano TEXT,
+            ocasioes_uso TEXT,
+            familia_olfativa TEXT,
+            notas_olfativas TEXT,
+            marca TEXT,
+            perfumista TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Inicializa a base de dados ao carregar o app
+init_db()
 # =========================================================
 # FUNÇÕES DE TRATAMENTO DE TEXTO
 # =========================================================
