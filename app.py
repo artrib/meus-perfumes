@@ -380,7 +380,7 @@ if choice == " Pesquisar":
 
         with col4:
             # Adiciona um espaçamento antes do gráfico dos Perfumistas
-            st.markdown("<>", unsafe_allow_html=False)
+            st.markdown("", unsafe_allow_html=False)
             
             # GRÁFICO 4: PERFUMISTAS (Reformulado para separar nomes por vírgula)
             # 1. Filtra linhas vazias e garante que temos apenas texto na coluna
