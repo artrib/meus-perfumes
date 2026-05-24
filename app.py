@@ -382,14 +382,42 @@ if choice == " Pesquisar":
             # Adiciona um espaçamento antes do gráfico dos Perfumistas
             st.markdown("<br><br>", unsafe_allow_html=True)
             
-            # GRÁFICO 4: PERFUMISTAS
-            c_perf = df[df["Perfumista"].str.strip() != ""]["Perfumista"]
-            c_perf = c_perf.apply(padronizar_texto).value_counts().nlargest(15).reset_index(name="count")
+            # GRÁFICO 4: PERFUMISTAS (Reformulado para separar nomes por vírgula)
+            # 1. Filtra linhas vazias e garante que temos apenas texto na coluna
+            perf_series = df["Perfumista"].dropna().astype(str)
+            perf_series = perf_series[perf_series.str.strip() != ""]
+            
+            # 2. Separa os perfumistas pela vírgula e "explode" para linhas individuais
+            perf_individual = perf_series.str.split(',').explode()
+            
+            # 3. Limpa espaços em branco extra e aplica a padronização de texto
+            perf_individual = perf_individual.str.strip().apply(padronizar_texto)
+            
+            # 4. Garante que removemos eventuais valores que ficaram vazios após o split
+            perf_individual = perf_individual[perf_individual != ""]
+            
+            # 5. Conta a frequência dos 15 perfumistas mais comuns
+            c_perf = perf_individual.value_counts().nlargest(15).reset_index(name="count")
             c_perf.columns = ["Perfumista", "count"]
-            fig4 = px.bar(c_perf, x="count", y="Perfumista", orientation='h', text="count", color_discrete_sequence=['#607274'])
-            fig4.update_layout(yaxis={'categoryorder': 'total ascending'}, height=450, margin=dict(t=10, b=10), xaxis_title=None, yaxis_title=None)
+            
+            # 6. Desenha o gráfico de barras horizontais
+            fig4 = px.bar(
+                c_perf, 
+                x="count", 
+                y="Perfumista", 
+                orientation='h', 
+                text="count", 
+                color_discrete_sequence=['#607274']
+            )
+            fig4.update_layout(
+                yaxis={'categoryorder': 'total ascending'}, 
+                height=450, 
+                margin=dict(t=10, b=10), 
+                xaxis_title=None, 
+                yaxis_title=None
+            )
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
-
+            
         # GRÁFICO 6: MARCAS
         st.markdown("---")
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
