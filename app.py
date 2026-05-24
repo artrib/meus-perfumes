@@ -282,9 +282,8 @@ if choice == " Pesquisar":
             
             # Define a ordem desejada das colunas
             ordem_desejada = [
-                "CASUAL DIA", "FORMAL DIA", "TRABALHO PRI/VER", 
-                "TRABALHO OUT/INV", "FORMAL NOITE", "CASUAL NOITE", 
-                "ESPECIAL", "GERAL"
+                "CASUAL DIA", "CASUAL NOITE", "TRABALHO PRI/VER", "TRABALHO OUT/INV", 
+                "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
             ]
             
             fig5 = px.bar(
