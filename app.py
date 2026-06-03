@@ -286,7 +286,7 @@ if choice == " Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # =========================================================
-            # GRÁFICO: GRANDES GRUPOS SAZONAIS (CALOR VS FRIO - MAIS LARGAS)
+            # GRÁFICO: GRANDES GRUPOS SAZONAIS (TOTALMENTE COLADAS E MAIS BAIXAS)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
@@ -323,17 +323,18 @@ if choice == " Pesquisar":
                 }
             )
 
-            # --- AQUI ESTÁ A ALTERAÇÃO: Aumentámos a largura para 0.7 ---
-            fig_grupos.update_traces(width=0.7, textposition='outside')
+            # Deixamos a largura total ativa para que elas se encontrem ao centro
+            fig_grupos.update_traces(width=1.0, textposition='outside')
             
             fig_grupos.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
                 showlegend=False,
-                margin=dict(t=20, b=10),
-                height=350,
-                # --- AQUI ESTÁ A ALTERAÇÃO: Forçámos o gap entre as barras a ser quase zero ---
-                bargap=0.05 
+                margin=dict(t=25, b=10, l=10, r=10),
+                # --- ALTERAÇÃO: Gráfico mais baixo ---
+                height=250,
+                # --- ALTERAÇÃO: Espaço zero entre as colunas ---
+                bargap=0 
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
             
