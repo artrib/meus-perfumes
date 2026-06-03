@@ -284,6 +284,57 @@ if choice == " Pesquisar":
                 height=350
             )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
+            # =========================================================
+            # NOVO GRÁFICO: GRANDES GRUPOS SAZONAIS (Inserido no meio)
+            # =========================================================
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Definir as tags exatas de cada coluna
+            grupo_quente_tags = ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER"]
+            grupo_frio_tags = ["OUTONO", "INVERNO", "OUT/INV"]
+
+            total_quente = 0
+            total_frio = 0
+
+            # Contagem linha a linha para evitar duplicar o mesmo perfume
+            for _, row in df.iterrows():
+                estacoes_perfume = [e.strip().upper() for e in str(row["Estações do Ano"]).split(',') if e.strip()]
+                
+                if any(tag in estacoes_perfume for tag in grupo_quente_tags):
+                    total_quente += 1
+                if any(tag in estacoes_perfume for tag in grupo_frio_tags):
+                    total_frio += 1
+
+            # Montar DataFrame do gráfico
+            df_grandes_grupos = pd.DataFrame({
+                "Grupo Sazonal": [
+                    "Colónias + Primavera + Verão + Pri/Ver", 
+                    "Outono + Inverno + Out/Inv"
+                ],
+                "Total": [total_quente, total_frio]
+            })
+
+            fig_grupos = px.bar(
+                df_grandes_grupos,
+                x="Grupo Sazonal",
+                y="Total",
+                text="Total",
+                color="Grupo Sazonal",
+                color_discrete_map={
+                    "Colónias + Primavera + Verão + Pri/Ver": "#8EACCD", # Tom claro/fresco
+                    "Outono + Inverno + Out/Inv": "#607274"             # Tom escuro/invernal
+                }
+            )
+
+            fig_grupos.update_traces(width=0.4, textposition='outside')
+            fig_grupos.update_layout(
+                xaxis_title=None,
+                yaxis_title=None,
+                showlegend=False,
+                margin=dict(t=20, b=10),
+                height=350
+            )
+            st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
             
             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
