@@ -289,7 +289,7 @@ if choice == " Pesquisar":
                 color="Ambiente",
                 color_discrete_map={
                     "Calor": "#9cb7ba",
-                    "Frio": "#607274"
+                    "Frio": "#989b9c"
                 }
             )
 
