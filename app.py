@@ -286,7 +286,7 @@ if choice == " Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # =========================================================
-            # GRÁFICO: GRANDES GRUPOS SAZONAIS (TOTALMENTE COLADAS E MAIS BAIXAS)
+            # GRÁFICO: GRANDES GRUPOS SAZONAIS (ULTRA-COMPACTO E SEM CORTAR NÚMEROS)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
@@ -323,18 +323,22 @@ if choice == " Pesquisar":
                 }
             )
 
-            # Deixamos a largura total ativa para que elas se encontrem ao centro
             fig_grupos.update_traces(width=1.0, textposition='outside')
             
+            # Descobrir o maior valor para dar uma folga dinâmica no topo do gráfico
+            maior_valor = max(total_calor, total_frio)
+
             fig_grupos.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
                 showlegend=False,
-                margin=dict(t=25, b=10, l=10, r=10),
-                # --- ALTERAÇÃO: Gráfico mais baixo ---
-                height=250,
-                # --- ALTERAÇÃO: Espaço zero entre as colunas ---
-                bargap=0 
+                # --- ALTERAÇÃO: Aumentada a margem superior (t=35) para dar espaço aos números ---
+                margin=dict(t=35, b=10, l=10, r=10),
+                # --- ALTERAÇÃO: Altura reduzida para metade (125) ---
+                height=125,
+                bargap=0,
+                # --- ALTERAÇÃO: Força o eixo Y a ter uma folga acima do maior número para não tapar ---
+                yaxis=dict(range=[0, maior_valor * 1.25], showgrid=False, visible=False)
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
             
