@@ -505,10 +505,10 @@ if choice == " Pesquisar":
         fig6.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
-            # =========================================================
-            # NOVO GRÁFICO: TRÊS GRUPOS SAZONAIS (CALOR, MEIA-ESTAÇÃO, FRIO)
-            # =========================================================
-            st.markdown("<br>", unsafe_allow_html=True)
+         # =========================================================
+         # NOVO GRÁFICO: TRÊS GRUPOS SAZONAIS (CALOR, MEIA-ESTAÇÃO, FRIO)
+         # =========================================================
+         st.markdown("<br>", unsafe_allow_html=True)
             
             # 1. Definir os grupos com os nomes exatos do 'padronizar_texto'
             grupo_calor = ["Colonia", "Primavera", "Verao", "Pri/ver"]
@@ -576,7 +576,7 @@ if choice == " Pesquisar":
                 yaxis=dict(showgrid=False, visible=False)
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
-
+        
 # =========================================================
 # ADICIONAR / EDITAR / APAGAR
 # =========================================================
