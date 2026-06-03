@@ -286,54 +286,45 @@ if choice == " Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # =========================================================
-            # NOVO GRÁFICO: GRANDES GRUPOS SAZONAIS (Corrigido)
+            # GRÁFICO: GRANDES GRUPOS SAZONAIS (CALOR VS FRIO)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Definimos as tags já padronizadas (como o seu app faz internamente)
+            # 1. Separar e isolar todas as estações de todos os perfumes
+            todas_estacoes = df["Estações do Ano"].str.split(',').explode().str.strip()
+            todas_estacoes = todas_estacoes[todas_estacoes != ""].apply(padronizar_texto)
+            
+            # 2. Criar um dicionário de frequências
+            contagem_individual = todas_estacoes.value_counts().to_dict()
+            
+            # 3. Definir os grupos com os nomes padronizados
             grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver"]
             grupo_frio_tags = ["Outono", "Inverno", "Out/inv"]
+            
+            # 4. Somar as ocorrências para Calor e Frio
+            total_calor = sum(contagem_individual.get(tag, 0) for tag in grupo_quente_tags)
+            total_frio = sum(contagem_individual.get(tag, 0) for tag in grupo_frio_tags)
 
-            total_quente = 0
-            total_frio = 0
-
-            # Contagem linha a linha
-            for _, row in df.iterrows():
-                # Aplicamos o 'padronizar_texto' a cada estação encontrada na linha
-                estacoes_perfume = [
-                    padronizar_texto(e.strip()) 
-                    for e in str(row["Estações do Ano"]).split(',') 
-                    if e.strip()
-                ]
-                
-                # Verifica se há correspondência com os grupos padronizados
-                if any(tag in estacoes_perfume for tag in grupo_quente_tags):
-                    total_quente += 1
-                if any(tag in estacoes_perfume for tag in grupo_frio_tags):
-                    total_frio += 1
-
-            # Montar DataFrame do gráfico
+            # 5. Montar o DataFrame com os nomes curtos que pediu para as legendas
             df_grandes_grupos = pd.DataFrame({
-                "Grupo Sazonal": [
-                    "Colónias + Primavera + Verão + Pri/Ver", 
-                    "Outono + Inverno + Out/Inv"
-                ],
-                "Total": [total_quente, total_frio]
+                "Ambiente": ["Calor", "Frio"],
+                "Total": [total_calor, total_frio]
             })
 
             fig_grupos = px.bar(
                 df_grandes_grupos,
-                x="Grupo Sazonal",
+                x="Ambiente",
                 y="Total",
                 text="Total",
-                color="Grupo Sazonal",
+                color="Ambiente",
                 color_discrete_map={
-                    "Colónias + Primavera + Verão + Pri/Ver": "#8EACCD",
-                    "Outono + Inverno + Out/Inv": "#607274"
+                    "Calor": "#8EACCD",  # Tom mais aberto/fresco
+                    "Frio": "#607274"    # Tom mais fechado/invernal
                 }
             )
 
-            fig_grupos.update_traces(width=0.4, textposition='outside')
+            # Ajustes visuais para colar as colunas (basta diminuir a largura se quiser mais largas)
+            fig_grupos.update_traces(width=0.5, textposition='outside')
             fig_grupos.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
