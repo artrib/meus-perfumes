@@ -288,7 +288,7 @@ if choice == " Pesquisar":
                 text="Total",
                 color="Ambiente",
                 color_discrete_map={
-                    "Calor": "#ebe97a",
+                    "Calor": "#f5f5e4",
                     "Frio": "#6f7275"
                 }
             )
