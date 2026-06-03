@@ -255,36 +255,6 @@ if choice == " Pesquisar":
         col1, col2 = st.columns(2)
 
         with col1:
-            # GRÁFICO 1: ESTAÇÕES
-            c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
-            # Filtra vazios e padroniza para garantir que batam com a lista definida
-            c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
-            c_est.columns = ["Estações do Ano", "count"]
-            
-            # Define a ordem desejada das colunas conforme solicitado
-            ordem_estacoes = [
-                "Colonia", "Primavera", "Verao", "Pri/ver", 
-                "Meia-estacao", "Out/inv", "Inverno", "Outono", "Geral"
-            ]
-            
-            fig1 = px.bar(
-                c_est, 
-                x="Estações do Ano", 
-                y="count", 
-                text="count", 
-                color_discrete_sequence=['#B0A695'],
-                category_orders={"Estações do Ano": ordem_estacoes}
-            )
-            
-            fig1.update_traces(width=0.45, textposition='outside')
-            fig1.update_layout(
-                xaxis_title=None, 
-                yaxis_title=None, 
-                margin=dict(t=20, b=10), 
-                height=350
-            )
-            st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
-            
             # =========================================================
             # GRÁFICO: GRANDES GRUPOS SAZONAIS (ULTRA-COMPACTO E SEM CORTAR NÚMEROS)
             # =========================================================
@@ -341,6 +311,36 @@ if choice == " Pesquisar":
                 yaxis=dict(range=[0, maior_valor * 1.25], showgrid=False, visible=False)
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
+            
+            # GRÁFICO 1: ESTAÇÕES
+            c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
+            # Filtra vazios e padroniza para garantir que batam com a lista definida
+            c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
+            c_est.columns = ["Estações do Ano", "count"]
+            
+            # Define a ordem desejada das colunas conforme solicitado
+            ordem_estacoes = [
+                "Colonia", "Primavera", "Verao", "Pri/ver", 
+                "Meia-estacao", "Out/inv", "Inverno", "Outono", "Geral"
+            ]
+            
+            fig1 = px.bar(
+                c_est, 
+                x="Estações do Ano", 
+                y="count", 
+                text="count", 
+                color_discrete_sequence=['#B0A695'],
+                category_orders={"Estações do Ano": ordem_estacoes}
+            )
+            
+            fig1.update_traces(width=0.45, textposition='outside')
+            fig1.update_layout(
+                xaxis_title=None, 
+                yaxis_title=None, 
+                margin=dict(t=20, b=10), 
+                height=350
+            )
+            st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # GRÁFICO 5: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
