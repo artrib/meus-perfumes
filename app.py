@@ -268,7 +268,7 @@ if choice == " Pesquisar":
             contagem_individual = todas_estacoes.value_counts().to_dict()
             
             # 3. Definir os grupos com os nomes padronizados
-            grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver"]
+            grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver", "Meia-estacao"]
             grupo_frio_tags = ["Outono", "Inverno", "Out/inv"]
             
             # 4. Somar as ocorrências para Calor e Frio
@@ -310,8 +310,10 @@ if choice == " Pesquisar":
                 yaxis=dict(showgrid=False, visible=False) # Remove a escala do eixo Y para ficar mais limpo
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
-            
+
+            # =========================================================
             # GRÁFICO: ESTAÇÕES
+            # =========================================================
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
             # Filtra vazios e padroniza para garantir que batam com a lista definida
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
@@ -341,7 +343,9 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
+            # =========================================================
             # GRÁFICO: OCASIÕES DE USO
+            # =========================================================
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
@@ -369,8 +373,10 @@ if choice == " Pesquisar":
                 height=350
             )
             st.plotly_chart(fig5, use_container_width=True, config=config_fixo)
-
+            
+            # =========================================================
             # GRÁFICO: DIA E NOITE (Ying Yang)
+            # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
             # 1. Definição das etiquetas correspondentes a cada período
@@ -423,7 +429,9 @@ if choice == " Pesquisar":
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
 
         with col2:
+            # =========================================================
             # GRÁFICO: NOTAS
+            # =========================================================
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
@@ -447,7 +455,9 @@ if choice == " Pesquisar":
             # Adiciona um espaçamento antes do gráfico dos Perfumistas
             st.markdown("<br><br>", unsafe_allow_html=True)
             
-            # GRÁFICO: PERFUMISTAS (Reformulado para separar nomes por vírgula)
+            # =========================================================
+            # GRÁFICO: PERFUMISTAS
+            # =========================================================
             # 1. Filtra linhas vazias e garante que temos apenas texto na coluna
             perf_series = df["Perfumista"].dropna().astype(str)
             perf_series = perf_series[perf_series.str.strip() != ""]
@@ -483,7 +493,9 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
             
+        # =========================================================            
         # GRÁFICO: MARCAS
+        # =========================================================
         st.markdown("---")
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
         c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
