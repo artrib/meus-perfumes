@@ -269,7 +269,7 @@ if choice == " Pesquisar":
             
             # 3. Definir os grupos com os nomes padronizados
             grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver", "Meia-estacao"]
-            grupo_frio_tags = ["Outono", "Inverno", "Out/inv"]
+            grupo_frio_tags = ["Outono", "Inverno", "Out/inv", "Meia-estacao"]
             
             # 4. Somar as ocorrências para Calor e Frio
             total_calor = sum(contagem_individual.get(tag, 0) for tag in grupo_quente_tags)
