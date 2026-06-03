@@ -505,6 +505,78 @@ if choice == " Pesquisar":
         fig6.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=10), height=400)
         st.plotly_chart(fig6, use_container_width=True, config=config_fixo)
 
+            # =========================================================
+            # NOVO GRÁFICO: TRÊS GRUPOS SAZONAIS (CALOR, MEIA-ESTAÇÃO, FRIO)
+            # =========================================================
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # 1. Definir os grupos com os nomes exatos do 'padronizar_texto'
+            grupo_calor = ["Colonia", "Primavera", "Verao", "Pri/ver"]
+            grupo_meia  = ["Meia-estacao"]
+            grupo_frio  = ["Outono", "Inverno", "Out/inv"]
+
+            total_calor = 0
+            total_meia = 0
+            total_frio = 0
+
+            # 2. Contagem linha a linha (1 voto por perfume em cada grupo que pertencer)
+            for _, row in df.iterrows():
+                estacoes_perfume = [
+                    padronizar_texto(e.strip()) 
+                    for e in str(row["Estações do Ano"]).split(',') 
+                    if e.strip()
+                ]
+                
+                # Se o perfume tiver qualquer tag de calor, entra no Calor
+                if any(tag in estacoes_perfume for tag in grupo_calor):
+                    total_calor += 1
+                
+                # Se o perfume tiver "Meia-estacao", entra na Meia-Estação
+                if any(tag in estacoes_perfume for tag in grupo_meia):
+                    total_meia += 1
+                    
+                # Se o perfume tiver qualquer tag de frio, entra no Frio
+                if any(tag in estacoes_perfume for tag in grupo_frio):
+                    total_frio += 1
+
+            # 3. Montar o DataFrame com as 3 colunas na ordem correta
+            df_grandes_grupos = pd.DataFrame({
+                "Ambiente": ["Calor", "Meia-Estação", "Frio"],
+                "Total": [total_calor, total_meia, total_frio]
+            })
+
+            fig_grupos = px.bar(
+                df_grandes_grupos,
+                x="Ambiente",
+                y="Total",
+                text="Total",
+                color="Ambiente",
+                # Cores para as 3 colunas: Azul/Fresco, Cinza Claro/Transição, Cinza Escuro/Frio
+                color_discrete_map={
+                    "Calor": "#8EACCD",
+                    "Meia-Estação": "#BAC7A7",
+                    "Frio": "#607274"
+                }
+            )
+
+            # Mantemos as barras totalmente coladas (width=1.0) e os números lá dentro
+            fig_grupos.update_traces(
+                width=1.0, 
+                textposition='inside',
+                textfont=dict(size=14, color='white', family='Arial', weight='bold')
+            )
+            
+            fig_grupos.update_layout(
+                xaxis_title=None,
+                yaxis_title=None,
+                showlegend=False,
+                margin=dict(t=10, b=10, l=10, r=10),
+                height=125, # Altura ultra-compacta mantida
+                bargap=0,   # Sem espaço entre as barras
+                yaxis=dict(showgrid=False, visible=False)
+            )
+            st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
+
 # =========================================================
 # ADICIONAR / EDITAR / APAGAR
 # =========================================================
