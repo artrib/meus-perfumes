@@ -185,16 +185,26 @@ if choice == " Pesquisar":
             mask = result["Notas Olfativas"].apply(match_exact_note)
             result = result[mask].copy()
         else:
-            termos = search.split()
-            for termo in termos:
-                t_norm = remover_acentos(termo)
+            # 1. Separar os termos por espaços, vírgulas ou pelo sinal de mais '+'
+            # Substitui '+' e ',' por espaços e depois divide os termos
+            termos_brutos = search.replace("+", " ").replace(",", " ").split()
+            
+            for termo in termos_brutos:
+                t_norm = remover_acentos(termo).strip()
+                if not t_norm:
+                    continue  # Salta caso haja espaços extra
+                
                 if local_busca == "Tudo":
+                    # Forçamos o uso do motor de string do Python para evitar falhas no PyArrow
                     mask = result.apply(
-                        lambda row: row.astype(str).map(remover_acentos).str.contains(t_norm).any(),
+                        lambda row: row.astype("string[python]").map(remover_acentos).str.contains(t_norm, regex=False).any(),
                         axis=1
                     )
                 else:
-                    mask = result[local_busca].astype(str).map(remover_acentos).str.contains(t_norm)
+                    # Filtro para colunas específicas
+                    mask = result[local_busca].astype("string[python]").map(remover_acentos).str.contains(t_norm, regex=False)
+                
+                # Aplica o filtro de forma cumulativa (AND) para que encontre linhas que tenham TODOS os termos
                 result = result[mask].copy()
 
     # --- AQUI É ONDE ENTRA A CORREÇÃO DA CONTAGEM E DO INDEX ---
