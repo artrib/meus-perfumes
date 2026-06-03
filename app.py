@@ -286,7 +286,7 @@ if choice == " Pesquisar":
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
             # =========================================================
-            # GRÁFICO: GRANDES GRUPOS SAZONAIS (CALOR VS FRIO)
+            # GRÁFICO: GRANDES GRUPOS SAZONAIS (CALOR VS FRIO - MAIS LARGAS)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
@@ -305,7 +305,7 @@ if choice == " Pesquisar":
             total_calor = sum(contagem_individual.get(tag, 0) for tag in grupo_quente_tags)
             total_frio = sum(contagem_individual.get(tag, 0) for tag in grupo_frio_tags)
 
-            # 5. Montar o DataFrame com os nomes curtos que pediu para as legendas
+            # 5. Montar o DataFrame
             df_grandes_grupos = pd.DataFrame({
                 "Ambiente": ["Calor", "Frio"],
                 "Total": [total_calor, total_frio]
@@ -318,19 +318,22 @@ if choice == " Pesquisar":
                 text="Total",
                 color="Ambiente",
                 color_discrete_map={
-                    "Calor": "#8EACCD",  # Tom mais aberto/fresco
-                    "Frio": "#607274"    # Tom mais fechado/invernal
+                    "Calor": "#8EACCD",
+                    "Frio": "#607274"
                 }
             )
 
-            # Ajustes visuais para colar as colunas (basta diminuir a largura se quiser mais largas)
-            fig_grupos.update_traces(width=0.5, textposition='outside')
+            # --- AQUI ESTÁ A ALTERAÇÃO: Aumentámos a largura para 0.7 ---
+            fig_grupos.update_traces(width=0.7, textposition='outside')
+            
             fig_grupos.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
                 showlegend=False,
                 margin=dict(t=20, b=10),
-                height=350
+                height=350,
+                # --- AQUI ESTÁ A ALTERAÇÃO: Forçámos o gap entre as barras a ser quase zero ---
+                bargap=0.05 
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
             
