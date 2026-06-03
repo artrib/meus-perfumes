@@ -256,7 +256,7 @@ if choice == " Pesquisar":
 
         with col1:
             # =========================================================
-            # GRÁFICO: GRANDES GRUPOS SAZONAIS (ULTRA-COMPACTO E SEM CORTAR NÚMEROS)
+            # GRÁFICO: CALOR e FRIO
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
@@ -288,31 +288,30 @@ if choice == " Pesquisar":
                 text="Total",
                 color="Ambiente",
                 color_discrete_map={
-                    "Calor": "#f5f5e4",
-                    "Frio": "#6f7275"
+                    "Calor": "#8EACCD",
+                    "Frio": "#607274"
                 }
             )
 
-            fig_grupos.update_traces(width=1.0, textposition='outside')
+            # --- ALTERAÇÃO: textposition mudou para 'inside' ---
+            fig_grupos.update_traces(
+                width=1.0, 
+                textposition='inside',
+                textfont=dict(size=14, color='white', family='Arial', weight='bold') # Texto maior, branco e negrito
+            )
             
-            # Descobrir o maior valor para dar uma folga dinâmica no topo do gráfico
-            maior_valor = max(total_calor, total_frio)
-
             fig_grupos.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
                 showlegend=False,
-                # --- ALTERAÇÃO: Aumentada a margem superior (t=35) para dar espaço aos números ---
-                margin=dict(t=35, b=10, l=10, r=10),
-                # --- ALTERAÇÃO: Altura reduzida para metade (125) ---
+                margin=dict(t=10, b=10, l=10, r=10), # Reduzida a margem do topo (t=10) já que o número não está fora
                 height=125,
                 bargap=0,
-                # --- ALTERAÇÃO: Força o eixo Y a ter uma folga acima do maior número para não tapar ---
-                yaxis=dict(range=[0, maior_valor * 1.25], showgrid=False, visible=False)
+                yaxis=dict(showgrid=False, visible=False) # Remove a escala do eixo Y para ficar mais limpo
             )
             st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
             
-            # GRÁFICO 1: ESTAÇÕES
+            # GRÁFICO: ESTAÇÕES
             c_est = df["Estações do Ano"].str.split(',').explode().str.strip()
             # Filtra vazios e padroniza para garantir que batam com a lista definida
             c_est = c_est[c_est != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
@@ -342,7 +341,7 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
             
-            # GRÁFICO 5: OCASIÕES DE USO
+            # GRÁFICO: OCASIÕES DE USO
             c_oc = df["Ocasiões de Uso"].str.split(',').explode().str.strip()
             c_oc = c_oc[c_oc != ""].value_counts().reset_index(name="count")
             c_oc.columns = ["Ocasiões", "count"]
@@ -424,7 +423,7 @@ if choice == " Pesquisar":
                 st.plotly_chart(fig_yn, use_container_width=True, config=config_fixo)
 
         with col2:
-            # GRÁFICO 2: NOTAS
+            # GRÁFICO: NOTAS
             n_s = df["Notas Olfativas"].str.split(',').explode().str.strip()
             c_not = n_s[n_s != ""].apply(padronizar_texto).value_counts().nlargest(30).reset_index(name="count")
             c_not.columns = ["Notas Olfativas", "count"]
@@ -436,7 +435,7 @@ if choice == " Pesquisar":
         st.markdown("<br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
-            # GRÁFICO 3: FAMÍLIA
+            # GRÁFICO: FAMÍLIA
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
@@ -448,7 +447,7 @@ if choice == " Pesquisar":
             # Adiciona um espaçamento antes do gráfico dos Perfumistas
             st.markdown("<br><br>", unsafe_allow_html=True)
             
-            # GRÁFICO 4: PERFUMISTAS (Reformulado para separar nomes por vírgula)
+            # GRÁFICO: PERFUMISTAS (Reformulado para separar nomes por vírgula)
             # 1. Filtra linhas vazias e garante que temos apenas texto na coluna
             perf_series = df["Perfumista"].dropna().astype(str)
             perf_series = perf_series[perf_series.str.strip() != ""]
@@ -484,7 +483,7 @@ if choice == " Pesquisar":
             )
             st.plotly_chart(fig4, use_container_width=True, config=config_fixo)
             
-        # GRÁFICO 6: MARCAS
+        # GRÁFICO: MARCAS
         st.markdown("---")
         c_marca = df[df["Marca"].str.strip() != ""]["Marca"]
         c_marca = c_marca.apply(lambda x: x.upper().strip()).value_counts().nlargest(20).reset_index(name="count")
