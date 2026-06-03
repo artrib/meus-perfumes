@@ -284,22 +284,29 @@ if choice == " Pesquisar":
                 height=350
             )
             st.plotly_chart(fig1, use_container_width=True, config=config_fixo)
+            
             # =========================================================
-            # NOVO GRÁFICO: GRANDES GRUPOS SAZONAIS (Inserido no meio)
+            # NOVO GRÁFICO: GRANDES GRUPOS SAZONAIS (Corrigido)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Definir as tags exatas de cada coluna
-            grupo_quente_tags = ["COLÓNIAS", "PRIMAVERA", "VERÃO", "PRI/VER"]
-            grupo_frio_tags = ["OUTONO", "INVERNO", "OUT/INV"]
+            # Definimos as tags já padronizadas (como o seu app faz internamente)
+            grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver"]
+            grupo_frio_tags = ["Outono", "Inverno", "Out/inv"]
 
             total_quente = 0
             total_frio = 0
 
-            # Contagem linha a linha para evitar duplicar o mesmo perfume
+            # Contagem linha a linha
             for _, row in df.iterrows():
-                estacoes_perfume = [e.strip().upper() for e in str(row["Estações do Ano"]).split(',') if e.strip()]
+                # Aplicamos o 'padronizar_texto' a cada estação encontrada na linha
+                estacoes_perfume = [
+                    padronizar_texto(e.strip()) 
+                    for e in str(row["Estações do Ano"]).split(',') 
+                    if e.strip()
+                ]
                 
+                # Verifica se há correspondência com os grupos padronizados
                 if any(tag in estacoes_perfume for tag in grupo_quente_tags):
                     total_quente += 1
                 if any(tag in estacoes_perfume for tag in grupo_frio_tags):
@@ -321,8 +328,8 @@ if choice == " Pesquisar":
                 text="Total",
                 color="Grupo Sazonal",
                 color_discrete_map={
-                    "Colónias + Primavera + Verão + Pri/Ver": "#8EACCD", # Tom claro/fresco
-                    "Outono + Inverno + Out/Inv": "#607274"             # Tom escuro/invernal
+                    "Colónias + Primavera + Verão + Pri/Ver": "#8EACCD",
+                    "Outono + Inverno + Out/Inv": "#607274"
                 }
             )
 
