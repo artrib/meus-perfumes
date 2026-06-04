@@ -85,8 +85,8 @@ ESTACOES_LISTA = [
 ]
 
 OCASIOES_OPCOES = [
-    "CASUAL DIA", "CASUAL NOITE", "TRABALHO PRI/VER", 
-    "TRABALHO OUT/INV", "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
+    "CASUAL DIA - PRI/VER", "CASUAL NOITE - PRI/VER", "CASUAL DIA - OUT/INV", "CASUAL NOITE - OUT/INV", "TRABALHO PRI/VER", 
+    "TRABALHO OUT/INV", "FORMAL DIA - PRI/VER", "FORMAL NOITE - PRI/VER", "FORMAL DIA - OUT/INV", "FORMAL NOITE - OUT/INV", "ESPECIAL", "GERAL"
 ]
 
 # =========================================================
@@ -367,8 +367,8 @@ if choice == " Pesquisar":
             
             # Define a ordem desejada das colunas
             ordem_desejada = [
-                "CASUAL DIA", "CASUAL NOITE", "TRABALHO PRI/VER", "TRABALHO OUT/INV", 
-                "FORMAL DIA", "FORMAL NOITE", "ESPECIAL", "GERAL"
+                "CASUAL DIA - PRI/VER", "CASUAL NOITE - PRI/VER", "CASUAL DIA - OUT/INV", "CASUAL NOITE - OUT/INV", "TRABALHO PRI/VER", 
+                "TRABALHO OUT/INV", "FORMAL DIA - PRI/VER", "FORMAL NOITE - PRI/VER", "FORMAL DIA - OUT/INV", "FORMAL NOITE - OUT/INV", "ESPECIAL", "GERAL"
             ]
             
             fig5 = px.bar(
