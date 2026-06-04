@@ -395,8 +395,8 @@ if choice == " Pesquisar":
             st.markdown("<br>", unsafe_allow_html=True)
             
             # 1. Definição das etiquetas correspondentes a cada período
-            dia_tags = ["CASUAL DIA", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA"]
-            noite_tags = ["CASUAL NOITE", "FORMAL NOITE"]
+            dia_tags = ["CASUAL DIA - PRI/VER", "CASUAL DIA - OUT/INV", "TRABALHO PRI/VER", "TRABALHO OUT/INV", "FORMAL DIA - PRI/VER", "FORMAL DIA - OUT/INV"]
+            noite_tags = ["CASUAL NOITE - PRI/VER", "CASUAL NOITE - OUT/INV", "FORMAL NOITE - PRI/VER", "FORMAL NOITE - OUT/INV"]
 
             # 2. Listas para armazenar as contagens finais (máximo 1 por perfume)
             total_dia = 0
