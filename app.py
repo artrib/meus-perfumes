@@ -256,63 +256,7 @@ if choice == " Pesquisar":
 
         with col1:
             # =========================================================
-            # GRÁFICO: CALOR e FRIO
-            # =========================================================
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            # 1. Separar e isolar todas as estações de todos os perfumes
-            todas_estacoes = df["Estações do Ano"].str.split(',').explode().str.strip()
-            todas_estacoes = todas_estacoes[todas_estacoes != ""].apply(padronizar_texto)
-            
-            # 2. Criar um dicionário de frequências
-            contagem_individual = todas_estacoes.value_counts().to_dict()
-            
-            # 3. Definir os grupos com os nomes padronizados
-            grupo_quente_tags = ["Colonia", "Primavera", "Verao", "Pri/ver", "Meia-estacao"]
-            grupo_frio_tags = ["Outono", "Inverno", "Out/inv", "Meia-estacao"]
-            
-            # 4. Somar as ocorrências para Calor e Frio
-            total_calor = sum(contagem_individual.get(tag, 0) for tag in grupo_quente_tags)
-            total_frio = sum(contagem_individual.get(tag, 0) for tag in grupo_frio_tags)
-
-            # 5. Montar o DataFrame
-            df_grandes_grupos = pd.DataFrame({
-                "Ambiente": ["Calor", "Frio"],
-                "Total": [total_calor, total_frio]
-            })
-
-            fig_grupos = px.bar(
-                df_grandes_grupos,
-                x="Ambiente",
-                y="Total",
-                text="Total",
-                color="Ambiente",
-                color_discrete_map={
-                    "Calor": "#ada44e",
-                    "Frio": "#6f7275"
-                }
-            )
-
-            # --- ALTERAÇÃO: textposition mudou para 'inside' ---
-            fig_grupos.update_traces(
-                width=1.0, 
-                textposition='inside',
-                textfont=dict(size=14, color='white', family='Arial', weight='bold') # Texto maior, branco e negrito
-            )
-            
-            fig_grupos.update_layout(
-                xaxis_title=None,
-                yaxis_title=None,
-                showlegend=False,
-                margin=dict(t=10, b=10, l=10, r=10), # Reduzida a margem do topo (t=10) já que o número não está fora
-                height=125,
-                bargap=0,
-                yaxis=dict(showgrid=False, visible=False) # Remove a escala do eixo Y para ficar mais limpo
-            )
-            st.plotly_chart(fig_grupos, use_container_width=True, config=config_fixo)
-
-            # =========================================================
-            # NOVO GRÁFICO: TRÊS GRUPOS SAZONAIS (MEIA-ESTAÇÃO EXCLUSIVA)
+            # GRÁFICO: CALOR, FRIO (MEIA-ESTAÇÃO EXCLUSIVA)
             # =========================================================
             st.markdown("<br>", unsafe_allow_html=True)
             
