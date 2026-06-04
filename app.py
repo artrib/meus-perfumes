@@ -514,7 +514,9 @@ if choice == " Pesquisar":
         st.markdown("<br><br>", unsafe_allow_html=True)
         col3, col4 = st.columns(2)
         with col3:
+            # =========================================================
             # GRÁFICO: FAMÍLIA
+            # =========================================================
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
