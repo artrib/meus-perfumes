@@ -473,6 +473,9 @@ if choice == " Pesquisar":
             fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
             
+        with col4:
+            # Adiciona um espaçamento extra antes do gráfico dos Perfumistas para descolar do gráfico de cima
+            st.markdown("<br><br><br>", unsafe_allow_html=True)            
             # =========================================================
             # GRÁFICO: PERFUMISTAS
             # =========================================================
