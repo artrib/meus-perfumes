@@ -474,7 +474,7 @@ if choice == " Pesquisar":
             
         with col4:
             # Cria um espaçamento controlado equivalente a metade do espaço anterior
-            st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)            
+            st.markdown("<div style='height: 35px;'></div>", unsafe_allow_html=True)            
             # =========================================================
             # GRÁFICO: PERFUMISTAS
             # =========================================================
