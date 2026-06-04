@@ -466,7 +466,7 @@ if choice == " Pesquisar":
             c_fam_todas.columns = ["Família Olfativa", "count"]
 
             # Se tiver mais do que 8 famílias, agrupamos o resto em "Outros"
-            if len(c_fam_todas) > 8:
+              if len(c_fam_todas) > 8:
             # Separamos as 7 maiores
             top_7 = c_fam_todas.head(7)
             # Somamos todas as outras a partir da posição 7
@@ -476,7 +476,7 @@ if choice == " Pesquisar":
             outros_df = pd.DataFrame([{"Família Olfativa": "Outros", "count": outros_total}])
             # Juntamos as duas partes
             c_fam = pd.concat([top_7, outros_df], ignore_index=True)
-            else:
+              else:
             c_fam = c_fam_todas
 
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
