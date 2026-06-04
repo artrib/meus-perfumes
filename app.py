@@ -459,12 +459,16 @@ if choice == " Pesquisar":
         col3, col4 = st.columns(2)
         with col3:
             # =========================================================
-            # GRÁFICO: FAMÍLIA
+            # GRÁFICO: FAMÍLIAS OLFATIVAS
             # =========================================================
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
             c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
+
+            # --- NOVA LINHA ADICIONADA AQUI ---
+            fig3.update_traces(textinfo='percent+value', textposition='inside')
+
             fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
 
