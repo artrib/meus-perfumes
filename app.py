@@ -465,31 +465,21 @@ if choice == " Pesquisar":
             c_fam_todas = f_s[f_s != ""].apply(padronizar_texto).value_counts().reset_index(name="count")
             c_fam_todas.columns = ["Família Olfativa", "count"]
 
-            # Se tiver mais do que 8 famílias, agrupamos o resto em "Outros"
-              if len(c_fam_todas) > 8:
-            # Separamos as 7 maiores
-            top_7 = c_fam_todas.head(7)
-            # Somamos todas as outras a partir da posição 7
-            outros_total = c_fam_todas.iloc[7:]["count"].sum()
-    
-            # Criamos a linha dos "Outros"
-            outros_df = pd.DataFrame([{"Família Olfativa": "Outros", "count": outros_total}])
-            # Juntamos as duas partes
-            c_fam = pd.concat([top_7, outros_df], ignore_index=True)
-              else:
-            c_fam = c_fam_todas
+            # Se existirem mais de 8 famílias, agrupamos o restante em "Outros"
+            if len(c_fam_todas) > 8:
+                top_7 = c_fam_todas.head(7)
+                outros_total = c_fam_todas.iloc[7:]["count"].sum()
+                outros_df = pd.DataFrame([{"Família Olfativa": "Outros", "count": outros_total}])
+                c_fam = pd.concat([top_7, outros_df], ignore_index=True)
+            else:
+                c_fam = c_fam_todas
 
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
-
-            # Mostra a percentagem e o número absoluto dentro da fatia
+            
+            # Configuração para mostrar a percentagem e a contagem absoluta dentro da fatia
             fig3.update_traces(textinfo='percent+value', textposition='inside')
-
-            fig3.update_layout(
-            showlegend=True, 
-            legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), 
-            margin=dict(t=10, b=100), 
-            height=340
-            )
+            
+            fig3.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5), margin=dict(t=10, b=100), height=340)
             st.plotly_chart(fig3, use_container_width=True, config=config_fixo)
             
             # =========================================================
