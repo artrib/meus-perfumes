@@ -462,7 +462,7 @@ if choice == " Pesquisar":
             # GRÁFICO: FAMÍLIAS OLFATIVAS
             # =========================================================
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
-            c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(9).reset_index(name="count")
+            c_fam = f_s[f_s != ""].apply(padronizar_texto).value_counts().nlargest(8).reset_index(name="count")
             c_fam.columns = ["Família Olfativa", "count"]
             fig3 = px.pie(c_fam, values='count', names='Família Olfativa', color_discrete_sequence=paleta_minimalista)
 
