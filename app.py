@@ -459,7 +459,6 @@ if choice == " Pesquisar":
         col3, col4 = st.columns(2)
         with col3:
             # =========================================================
-            # =========================================================
             # GRÁFICO: FAMÍLIAS OLFATIVAS
             # =========================================================
             f_s = df["Família Olfativa"].str.replace('/', ',').str.split(',').explode().str.strip()
@@ -475,7 +474,7 @@ if choice == " Pesquisar":
             
         with col4:
             # Cria um espaçamento controlado equivalente a metade do espaço anterior
-            st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)            
+            st.markdown("<div style='height: 85px;'></div>", unsafe_allow_html=True)            
             # =========================================================
             # GRÁFICO: PERFUMISTAS
             # =========================================================
